@@ -41,9 +41,9 @@ const MealSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    usersWhoLikesThisRecipe: [String],
-    usersWhoPutEmojiOnThisRecipe: [String],
-    usersWhoPutHeartOnThisRecipe: [String],
+    likes: true,
+    emojis: true,
+    hearts: true,
 
     // comments: { type: [{}] }, يجب تعريف مخطط الكومنتات قبل نشر أي شيء
   },

@@ -1,6 +1,4 @@
 import prisma from '../../../lib/PrismaClient';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../authOptions/route';
 
 export async function GET(req) {
   try {
@@ -11,32 +9,22 @@ export async function GET(req) {
     const limit = parseInt(searchParams.get('limit')) || 10;
     const selectedValue = searchParams.get('selectedValue');
 
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email || '';
-
     // Calculate the number of documents to skip
     const skip = (page - 1) * limit;
 
     // Build the query object
     const query = {};
-    if (email && !selectedValue) {
-      query.createdBy = email;
-    }
+
     if (selectedValue) {
       query.selectedValue = selectedValue;
     }
 
     // Fetch the meals and related users
     const allCookingRecipes = await prisma.meal.findMany({
-      where: query,
+      where: Object.keys(query).length ? query : undefined,
       orderBy: { createdAt: 'desc' },
       skip,
       take: limit,
-      include: {
-        usersWhoLikesThisRecipe: true,
-        usersWhoPutEmojiOnThisRecipe: true,
-        usersWhoPutHeartOnThisRecipe: true,
-      },
     });
 
     return new Response(JSON.stringify(allCookingRecipes), {
@@ -51,31 +39,34 @@ export async function GET(req) {
     });
   }
 }
+
 export async function PUT(req) {
   try {
-    const {
-      id,
-      email,
-      action, // can be 'like', 'emoji', 'heart'
-    } = await req.json();
-
-    const data = {
-      usersWhoLikesThisRecipe: undefined,
-      usersWhoPutEmojiOnThisRecipe: undefined,
-      usersWhoPutHeartOnThisRecipe: undefined,
-    };
+    const { id, email, action } = await req.json();
 
     if (action === 'like') {
-      await prisma.usersWhoLikes.create({
-        data: { mealId: id, email },
+      await prisma.like.create({
+        data: { mealId: id, userEmail: email },
+      });
+      await prisma.meal.update({
+        where: { id },
+        data: { likes: { increment: 1 } },
       });
     } else if (action === 'emoji') {
-      await prisma.usersWhoPutEmoji.create({
-        data: { mealId: id, email },
+      await prisma.emoji.create({
+        data: { mealId: id, userEmail: email },
+      });
+      await prisma.meal.update({
+        where: { id },
+        data: { emojis: { increment: 1 } },
       });
     } else if (action === 'heart') {
-      await prisma.usersWhoPutHeart.create({
-        data: { mealId: id, email },
+      await prisma.heart.create({
+        data: { mealId: id, userEmail: email },
+      });
+      await prisma.meal.update({
+        where: { id },
+        data: { hearts: { increment: 1 } },
       });
     }
 

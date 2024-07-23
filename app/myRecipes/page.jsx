@@ -34,7 +34,7 @@ export default function MyRecipes() {
   }, [pageNumber]);
 
   const fetchMyRecipes = async () => {
-    await fetch(`/api/allCookingRecipes?page=${pageNumber}&limit=10`)
+    await fetch(`/api/myRecipes?page=${pageNumber}&limit=10`)
       .then((res) => res?.json())
       .then((res) => {
         setMyRecipes(res);

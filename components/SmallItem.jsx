@@ -17,15 +17,9 @@ import LoadingPhoto from './LoadingPhoto';
 export default function SmallItem({ recipe, index, show = true, id = false }) {
   const [currentUser, setCurrentUser] = useState('');
   const [favorites, setFavorites] = useState();
-  const [numberOfLikes, setNumberOfLikes] = useState(
-    recipe?.usersWhoLikesThisRecipe?.length
-  );
-  const [numberOfEmojis, setNumberOfEmojis] = useState(
-    recipe?.usersWhoPutEmojiOnThisRecipe?.length
-  );
-  const [numberOfHearts, setNumberOfHearts] = useState(
-    recipe?.usersWhoPutHeartOnThisRecipe?.length
-  );
+  const [numberOfLikes, setNumberOfLikes] = useState(recipe?.likes);
+  const [numberOfEmojis, setNumberOfEmojis] = useState(recipe?.emojis);
+  const [numberOfHearts, setNumberOfHearts] = useState(recipe?.hearts);
 
   const [like, setLike] = useState(false);
   const [heart, setHeart] = useState(false);
@@ -45,204 +39,89 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       }
     }
     fetchFavoritePosts();
-    setActions();
+    // setActions();
   }, []);
 
-  function setActions() {
-    const isLiked = recipe?.usersWhoLikesThisRecipe?.filter(
-      (item) => item === session?.data?.user?.email
-    );
-    if (isLiked?.length > 0) {
-      setLike(true);
-    }
-    const isEmoji = recipe?.usersWhoPutEmojiOnThisRecipe?.filter(
-      (item) => item === session?.data?.user?.email
-    );
-    if (isEmoji?.length > 0) {
-      setEmoji(true);
-    }
-    const isHeart = recipe?.usersWhoPutHeartOnThisRecipe?.filter(
-      (item) => item === session?.data?.user?.email
-    );
-    if (isHeart?.length > 0) {
-      setHeart(true);
-    }
-  }
-
+  // function setActions() {
+  //   const isLiked = recipe?.likes?.filter(
+  //     (item) => item === session?.data?.user?.email
+  //   );
+  //   if (isLiked?.length > 0) {
+  //     setLike(true);
+  //   }
+  //   const isEmoji = recipe?.emojis?.filter(
+  //     (item) => item === session?.data?.user?.email
+  //   );
+  //   if (isEmoji?.length > 0) {
+  //     setEmoji(true);
+  //   }
+  //   const isHeart = recipe?.hearts?.filter(
+  //     (item) => item === session?.data?.user?.email
+  //   );
+  //   if (isHeart?.length > 0) {
+  //     setHeart(true);
+  //   }
+  // }
   //? يتم تفعيل هذه الدالة عند الضغط على زر حفظ ليتم حفظ البوست الذي تم الضغط عليه من قبل المستخدم في قائمة مفضلاته
   //? أو سوف يتم حذف هذا البوست من قائمة مفضلة المستخدم إذا كان موجودا أي أن المستخدم لم يعد يريده في قائمته
-  async function handleFavoritePost() {
-    const findPost = favorites.filter((post) => post?.postId === recipe?._id);
-    if (!findPost[0]) {
-      const { _id, ...props } = recipe;
-      const response = await fetch('/api/favoritePosts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...props,
-          postId: _id,
-          favoritedByUser: currentUser?.email,
-        }),
-      });
-      if (response.ok) {
-        fetchFavoritePosts();
 
-        toast.custom((t) => (
-          <CustomToast
-            t={t}
-            message={'تم إضافة هذه الوصفة إلى قائمة وصفاتك المفضلة'}
-            greenEmoji={'✔'}
-            emoji={'😋'}
-          />
-        ));
-      } else {
-        toast.custom((t) => (
-          <CustomToast
-            t={t}
-            message={'حدث خطأ ما حاول مرة أخرى'}
-            redEmoji={'✖'}
-            emoji={'😐'}
-          />
-        ));
+  async function handleInteraction(mealId, action) {
+    const response = await fetch(`/api/actions/${action}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ mealId }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log(result.message);
+
+      if (action === 'likes') {
+        setLike((prev) => !prev);
+        setNumberOfLikes((prev) => (like ? prev - 1 : prev + 1));
+      } else if (action === 'favorites') {
+        setHeart((prev) => !prev);
+        setNumberOfHearts((prev) => (heart ? prev - 1 : prev + 1));
+      } else if (action === 'hearts') {
+        setEmoji((prev) => !prev);
+        setNumberOfEmojis((prev) => (emoji ? prev - 1 : prev + 1));
       }
+
+      toast.custom((t) => (
+        <CustomToast
+          t={t}
+          message={result.message}
+          greenEmoji={'✔'}
+          emoji={'😋'}
+        />
+      ));
     } else {
-      const response = await fetch('/api/favoritePosts', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...findPost[0],
-        }),
-      });
-      if (response.ok) {
-        fetchFavoritePosts();
-        toast.custom((t) => (
-          <CustomToast
-            t={t}
-            message={'تم إزالة هذه الوصفة من قائمة مفضلاتك بنجاح'}
-            redEmoji={'✖'}
-          />
-        ));
-      } else {
-        toast.custom((t) => (
-          <CustomToast t={t} message={'😐 حدث خطأ ما حاول مرة أخرى ✖'} />
-        ));
-      }
+      console.error(`Failed to toggle ${action}`);
+      toast.custom((t) => (
+        <CustomToast
+          t={t}
+          message={'Failed to toggle interaction'}
+          redEmoji={'✖'}
+        />
+      ));
     }
   }
+
   //? للبحث عن هذا البوست في قائمة المفضلة اذا موجود يتم تفعيل اللون الاحمر بأن المستخدم بالفعل أعجب بهذا البوست من قبل
-  async function fetchFavoritePosts() {
-    const response = await fetch('/api/favoritePosts');
-    const json = await response.json();
-    setFavorites(json);
-    // console.log(json);
-    const findPost = json.filter((post) => post?.postId === recipe?._id);
-    // console.log('findPost', findPost);
-    if (findPost[0]) {
-      setHeart(true);
-    } else {
-      setHeart(false);
-    }
-  }
+  async function fetchFavoritePosts(id) {
+    const response = await fetch(`/api/favoritePosts&id=${id}`);
+    const json = await response?.json();
 
-  //? إذا كان المستخدم غير موجود في مصفوفة المعجبين  بهذا البوست heart يتم تفعيل هذه الدالة عند الضغط على زر
-  //? فسوف تتم إضافته وإلا سوف يتم حذفه من هذه المصفوفة
-  async function handleHeart() {
-    const user = recipe?.usersWhoPutHeartOnThisRecipe.filter(
-      (item) => item === session?.data?.user?.email
-    );
-
-    if (!user[0]) {
-      const response = await fetch('/api/allCookingRecipes', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          _id: recipe?._id,
-          usersWhoPutHeartOnThisRecipe: [
-            ...recipe?.usersWhoPutHeartOnThisRecipe,
-            session?.data?.user?.email,
-          ],
-        }),
-      });
-    } else {
-      const users = recipe?.usersWhoPutHeartOnThisRecipe.filter(
-        (item) => item !== session?.data?.user?.email
-      );
-      const response = await fetch('/api/allCookingRecipes', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          _id: recipe?._id,
-          usersWhoPutHeartOnThisRecipe: [...users],
-        }),
-      });
-    }
-  }
-
-  //? إذا كان المستخدم غير موجود في مصفوفة المعجبين  بهذا البوست like يتم تفعيل هذه الدالة عند الضغط على زر
-  //? فسوف تتم إضافته وإلا سوف يتم حذفه من هذه المصفوفة
-  async function handleLike() {
-    const user = recipe?.usersWhoLikesThisRecipe?.filter(
-      (item) => item === session?.data?.user?.email
-    );
-
-    if (!user[0]) {
-      const response = await fetch('/api/allCookingRecipes', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          _id: recipe?._id,
-          usersWhoLikesThisRecipe: [
-            ...recipe?.usersWhoLikesThisRecipe,
-            session?.data?.user?.email,
-          ],
-        }),
-      });
-    } else {
-      const users = recipe?.usersWhoLikesThisRecipe?.filter(
-        (item) => item !== session?.data?.user?.email
-      );
-      const response = await fetch('/api/allCookingRecipes', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          _id: recipe?._id,
-          usersWhoLikesThisRecipe: [...users],
-        }),
-      });
-    }
-  }
-
-  //? إذا كان المستخدم غير موجود في مصفوفة المعجبين  بهذا البوست emoji يتم تفعيل هذه الدالة عند الضغط على زر
-  //? فسوف تتم إضافته وإلا سوف يتم حذفه من هذه المصفوفة
-  async function handleEmoji() {
-    const user = recipe?.usersWhoPutEmojiOnThisRecipe.filter(
-      (item) => item === session?.data?.user?.email
-    );
-
-    if (!user[0]) {
-      const response = await fetch('/api/allCookingRecipes', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          _id: recipe?._id,
-          usersWhoPutEmojiOnThisRecipe: [
-            ...recipe?.usersWhoPutEmojiOnThisRecipe,
-            session?.data?.user?.email,
-          ],
-        }),
-      });
-    } else {
-      const users = recipe?.usersWhoPutEmojiOnThisRecipe.filter(
-        (item) => item !== session?.data?.user?.email
-      );
-      const response = await fetch('/api/allCookingRecipes', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          _id: recipe?._id,
-          usersWhoPutEmojiOnThisRecipe: [...users],
-        }),
-      });
+    if (response.ok) {
+      setFavorites(json);
+      const findPost = json.filter((post) => post?.postId === recipe?.id);
+      if (findPost[0]) {
+        setHeart(true);
+      } else {
+        setHeart(false);
+      }
     }
   }
 
@@ -269,7 +148,6 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       ));
     }
   }
-
   //? هذه الدالة للتأكد إذا كان التاريخ المدخل صحيحا أو لا
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -347,15 +225,14 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
               <div
                 className="flex justify-center items-center gap-2 cursor-pointer hover:bg-seven p-1 lg:p-2 rounded-lg select-none"
                 onClick={() => {
+                  handleInteraction(recipe?.id, 'hearts'); // For hearts
+
                   if (session?.status === 'authenticated') {
-                    handleHeart();
                     if (!heart) {
                       setNumberOfHearts(numberOfHearts + 1);
                     } else {
                       setNumberOfHearts(numberOfHearts - 1);
                     }
-                    handleFavoritePost();
-                    fetchFavoritePosts();
                   } else {
                     toast.custom((t) => (
                       <CustomToast
@@ -392,8 +269,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
               <div
                 className="flex justify-center items-center gap-2 cursor-pointer hover:bg-seven p-1 lg:p-2 rounded-lg select-none"
                 onClick={() => {
-                  handleLike();
-
+                  handleInteraction(recipe?.id, 'likes');
                   if (session?.status === 'authenticated') {
                     setLike(!like);
                     if (!like) {
@@ -401,6 +277,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
                     } else {
                       setNumberOfLikes(+numberOfLikes - 1);
                     }
+                    // For likes
                   } else {
                     toast.custom((t) => (
                       <CustomToast
@@ -433,8 +310,9 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
               <div
                 className="flex justify-center items-center gap-2 cursor-pointer hover:bg-seven py-1 px-2 rounded-lg select-none"
                 onClick={() => {
+                  handleInteraction(recipe?.id, 'emojis'); // For emojis
+
                   if (session?.status === 'authenticated') {
-                    handleEmoji();
                     setEmoji(!emoji);
                     if (!emoji) {
                       setNumberOfEmojis(numberOfEmojis + 1);
