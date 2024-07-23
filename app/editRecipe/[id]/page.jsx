@@ -44,7 +44,7 @@ export default function EditRecipe() {
   }, []);
 
   //? src نريد ان نستخرج منه قيمة ال string لكنه نص  ifram html الذي هو عبارة عن عنصر  link انشأنا ديف مؤقت لوضع ال
-  let tempDiv = document.createElement('div');
+  let tempDiv = document?.createElement('div');
   tempDiv.innerHTML = editedRecipe?.link;
 
   //? داخل هذا الديف iframe بحثنا عن اول
@@ -62,22 +62,20 @@ export default function EditRecipe() {
   };
 
   const fetchEditedRecipe = async () => {
-    const res = await fetch('/api/allCookingRecipes');
+    const res = await fetch(`/api/allCookingRecipes?id=${id}`);
     const json = await res?.json();
     if (res.ok) {
-      const findRecipe = await json?.filter((item) => item?._id === id);
-      setEditedRecipe(findRecipe[0]);
+      setEditedRecipe(json[0]);
     }
   };
 
   async function handleEditRecipe() {
     console.log('success');
-    const response = await fetch('/api/allCookingRecipes', {
+    const response = await fetch(`/api/allCookingRecipes?id=${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...inputs,
-        _id: editedRecipe?._id,
         image: data?.image,
       }),
     });

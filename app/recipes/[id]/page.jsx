@@ -15,8 +15,7 @@ export default function Page() {
     const response = await fetch(`/api/allCookingRecipes?id=${id}`);
     const json = await response?.json();
     if (response.ok) {
-      const res = await json?.filter((item) => item?.id === id);
-      setOneCookingRecipe(res[0]);
+      setOneCookingRecipe(json[0]);
     }
   }
 

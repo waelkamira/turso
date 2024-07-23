@@ -27,11 +27,6 @@ export async function GET(req) {
       orderBy: { createdAt: 'desc' },
       skip,
       take: limit,
-      include: {
-        likes: true,
-        emojis: true,
-        hearts: true,
-      },
     });
 
     return new Response(JSON.stringify(allCookingRecipes), {
