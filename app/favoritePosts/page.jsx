@@ -26,13 +26,42 @@ export default function Page() {
   }, [pageNumber]);
 
   const fetchUserFavorites = async () => {
-    await fetch(`/api/favoritePosts?page=${pageNumber}&limit=10`)
-      .then((res) => res.json())
-      .then((res) => {
-        // console.log('these are user favorites', res);
-        setUserFavorites(res);
-      });
+    try {
+      const res = await fetch(
+        `/api/actions/hearts?page=${pageNumber}&limit=10`
+      );
+      const data = await res?.json();
+      if (res.ok) {
+        console.log('data', data);
+
+        fetchOneCookingRecipes(data);
+      }
+    } catch (error) {
+      console.error('Error fetching user favorites:', error);
+    }
   };
+  //! هذا الكود لايعمل بشكل صحيح بطيء جدا
+  async function fetchOneCookingRecipes(favorites) {
+    console.log('favorites', favorites);
+
+    let arr = [];
+    const promises = favorites.map(async (item) => {
+      console.log('item', item);
+
+      const response = await fetch(`/api/allCookingRecipes?id=${item?.mealId}`);
+      const json = await response?.json();
+      if (response.ok) {
+        console.log('json', json);
+
+        arr.push(json[0]);
+      } else {
+        throw new Error('Failed to fetch cooking recipe');
+      }
+    });
+    console.log('arr', arr);
+
+    return setUserFavorites(arr);
+  }
 
   async function handleDeletePost(recipe) {
     const response = await fetch('/api/favoritePosts', {
