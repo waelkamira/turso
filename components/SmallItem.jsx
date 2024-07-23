@@ -38,7 +38,10 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
         setCurrentUser(user);
       }
     }
-    fetchFavoritePosts();
+    coloredHeart(recipe?.id);
+    coloredLike(recipe?.id);
+    coloredEmoji(recipe?.id);
+
     // setActions();
   }, []);
 
@@ -66,6 +69,13 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
   //? أو سوف يتم حذف هذا البوست من قائمة مفضلة المستخدم إذا كان موجودا أي أن المستخدم لم يعد يريده في قائمته
 
   async function handleInteraction(mealId, action) {
+    if (action === 'likes') {
+      setNumberOfLikes((prev) => (like ? prev - 1 : prev + 1));
+    } else if (action === 'hearts') {
+      setNumberOfHearts((prev) => (heart ? prev - 1 : prev + 1));
+    } else if (action === 'emojis') {
+      setNumberOfEmojis((prev) => (emoji ? prev - 1 : prev + 1));
+    }
     const response = await fetch(`/api/actions/${action}`, {
       method: 'POST',
       headers: {
@@ -76,17 +86,13 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
 
     if (response.ok) {
       const result = await response.json();
-      console.log(result.message);
 
-      if (action === 'likes') {
-        setLike(!like);
-        setNumberOfLikes((prev) => (like ? prev - 1 : prev + 1));
-      } else if (action === 'favorites') {
+      if (action === 'hearts') {
         setHeart(!heart);
-        setNumberOfHearts((prev) => (heart ? prev - 1 : prev + 1));
-      } else if (action === 'hearts') {
-        setEmoji(emoji);
-        setNumberOfEmojis((prev) => (emoji ? prev - 1 : prev + 1));
+      } else if (action === 'likes') {
+        setLike(!like);
+      } else if (action === 'emojis') {
+        setEmoji(!emoji);
       }
 
       toast.custom((t) => (
@@ -104,20 +110,62 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       ));
     }
   }
+  //? false وإلا ترجع true الوصفة ترجع  id اذا وجدت ايميل المستخدم و hearts هذه الدالة تبحث في جدول ال
+  async function coloredHeart(id = recipe?.id) {
+    try {
+      const response = await fetch(`/api/actions/hearts?mealId=${id}`);
+      const data = await response.json();
 
-  //? للبحث عن هذا البوست في قائمة المفضلة اذا موجود يتم تفعيل اللون الاحمر بأن المستخدم بالفعل أعجب بهذا البوست من قبل
-  async function fetchFavoritePosts(id) {
-    const response = await fetch(`/api/hearts&id=${id}`);
-    const json = await response?.json();
-
-    if (response.ok) {
-      setFavorites(json);
-      const findPost = json.filter((post) => post?.postId === recipe?.id);
-      if (findPost[0]) {
+      if (response.ok && data.exists) {
         setHeart(true);
+        console.log('Heart exists');
       } else {
         setHeart(false);
+
+        console.log('Heart does not exist');
       }
+    } catch (error) {
+      console.error('Error fetching heart status:', error);
+      setHeart(false);
+    }
+  }
+
+  //? false وإلا ترجع true الوصفة ترجع  id اذا وجدت ايميل المستخدم و likes هذه الدالة تبحث في جدول ال
+  async function coloredLike(id = recipe?.id) {
+    try {
+      const response = await fetch(`/api/actions/likes?mealId=${id}`);
+      const data = await response.json();
+
+      if (response.ok && data.exists) {
+        setLike(true);
+        console.log('Like exists');
+      } else {
+        setLike(false);
+
+        console.log('Like does not exist');
+      }
+    } catch (error) {
+      console.error('Error fetching like status:', error);
+      setLike(false);
+    }
+  }
+  //? false وإلا ترجع true الوصفة ترجع  id اذا وجدت ايميل المستخدم و emojis هذه الدالة تبحث في جدول ال
+  async function coloredEmoji(id = recipe?.id) {
+    try {
+      const response = await fetch(`/api/actions/emojis?mealId=${id}`);
+      const data = await response.json();
+
+      if (response.ok && data.exists) {
+        setEmoji(true);
+        console.log('Emoji exists');
+      } else {
+        setEmoji(false);
+
+        console.log('Emoji does not exist');
+      }
+    } catch (error) {
+      console.error('Error fetching emoji status:', error);
+      setEmoji(false);
     }
   }
 
@@ -222,7 +270,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
                 className="flex justify-center items-center gap-2 cursor-pointer hover:bg-seven p-1 lg:p-2 rounded-lg select-none"
                 onClick={() => {
                   handleInteraction(recipe?.id, 'hearts'); // For hearts
-
+                  coloredHeart(recipe?.id);
                   if (session?.status === 'authenticated') {
                     if (!heart) {
                       setNumberOfHearts(numberOfHearts + 1);
@@ -266,6 +314,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
                 className="flex justify-center items-center gap-2 cursor-pointer hover:bg-seven p-1 lg:p-2 rounded-lg select-none"
                 onClick={() => {
                   handleInteraction(recipe?.id, 'likes');
+                  coloredLike(recipe?.id);
                   if (session?.status === 'authenticated') {
                     setLike(!like);
                     if (!like) {
@@ -307,7 +356,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
                 className="flex justify-center items-center gap-2 cursor-pointer hover:bg-seven py-1 px-2 rounded-lg select-none"
                 onClick={() => {
                   handleInteraction(recipe?.id, 'emojis'); // For emojis
-
+                  coloredEmoji(recipe?.id);
                   if (session?.status === 'authenticated') {
                     setEmoji(!emoji);
                     if (!emoji) {

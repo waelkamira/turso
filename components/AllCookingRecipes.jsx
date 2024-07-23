@@ -29,7 +29,7 @@ export default function AllCookingRecipes() {
       );
       if (response.ok) {
         const json = await response.json();
-        console.log('json', json);
+        // console.log('json', json);
         dispatch({ type: 'SET_RECIPES', payload: json });
         setAllCookingRecipes(json);
       }

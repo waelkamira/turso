@@ -1,7 +1,51 @@
 import prisma from '../../../../lib/PrismaClient';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../authOptions/route';
+export async function GET(req) {
+  const session = await getServerSession(authOptions);
+  const email = session?.user?.email;
 
+  if (!email) {
+    return new Response(JSON.stringify({ error: 'User not authenticated' }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 401,
+    });
+  }
+
+  try {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const searchParams = url.searchParams;
+    const mealId = parseInt(searchParams.get('mealId'), 10);
+
+    if (isNaN(mealId)) {
+      return new Response(JSON.stringify({ error: 'Invalid meal ID' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
+    console.log('mealId:', mealId, 'email:', email);
+
+    // Check if the record exists in the likes table
+    const likeRecord = await prisma.like.findFirst({
+      where: {
+        userEmail: email,
+        mealId: mealId,
+      },
+    });
+
+    return new Response(JSON.stringify({ exists: !!likeRecord }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    });
+  } catch (error) {
+    console.error('Error checking like record:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 500,
+    });
+  }
+}
 export async function POST(req) {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;
@@ -18,7 +62,7 @@ export async function POST(req) {
     const mealId = data.mealId;
 
     // Log the email to ensure it's correct
-    console.log('Email from session:', email);
+    // console.log('Email from session:', email);
 
     // Find the existing like record
     const existingLike = await prisma.like.findFirst({
