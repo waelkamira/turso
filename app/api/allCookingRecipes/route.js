@@ -70,18 +70,71 @@ export async function DELETE(req) {
   try {
     const { id } = await req.json();
     console.log('id', id);
-    // Perform the delete operation using Prisma
-    const deleteRecipe = await prisma.meal.delete({
+
+    // Check if the meal exists
+    const mealExists = await prisma.meal.findUnique({
       where: { id },
     });
 
-    return new Response(JSON.stringify(deleteRecipe), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 200,
+    if (!mealExists) {
+      return new Response(JSON.stringify({ error: 'Meal not found' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 404,
+      });
+    }
+
+    await prisma.$transaction(async (prisma) => {
+      // Check and delete associated hearts
+      const heartsExist = await prisma.heart.findMany({
+        where: { mealId: id },
+      });
+      if (heartsExist.length > 0) {
+        await prisma.heart.deleteMany({
+          where: { mealId: id },
+        });
+      }
+
+      // Check and delete associated likes
+      const likesExist = await prisma.like.findMany({
+        where: { mealId: id },
+      });
+      if (likesExist.length > 0) {
+        await prisma.like.deleteMany({
+          where: { mealId: id },
+        });
+      }
+
+      // Check and delete associated emojis
+      const emojisExist = await prisma.emoji.findMany({
+        where: { mealId: id },
+      });
+      if (emojisExist.length > 0) {
+        await prisma.emoji.deleteMany({
+          where: { mealId: id },
+        });
+      }
+
+      // Delete the meal
+      await prisma.meal.delete({
+        where: { id },
+      });
     });
+
+    return new Response(
+      JSON.stringify({
+        message: 'تم الحذف بنجاح ✔',
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
   } catch (error) {
-    console.error('Error deleting recipe:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    console.error('حدث خطأ ما 😐', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 500,
+    });
   }
 }
 
