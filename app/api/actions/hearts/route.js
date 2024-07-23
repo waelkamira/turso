@@ -45,9 +45,12 @@ export async function POST(req) {
           },
         }),
       ]);
-      return new Response(JSON.stringify({ message: 'Heart removed' }), {
-        status: 200,
-      });
+      return new Response(
+        JSON.stringify({ message: 'تم إزالة الوصفة من قائمتك المفضلة' }),
+        {
+          status: 200,
+        }
+      );
     } else {
       // Create a new heart record and increment the hearts count
       await prisma.$transaction([
@@ -66,12 +69,12 @@ export async function POST(req) {
           },
         }),
       ]);
-      return new Response(JSON.stringify({ message: 'Heart added' }), {
+      return new Response(JSON.stringify({ message: 'تم حفظ الوصفة' }), {
         status: 201,
       });
     }
   } catch (error) {
-    console.error('Error toggling heart:', error);
+    console.error('حدث خطأ ما:', error);
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
       headers: { 'Content-Type': 'application/json' },
       status: 500,

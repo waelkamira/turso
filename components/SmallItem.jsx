@@ -79,13 +79,13 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       console.log(result.message);
 
       if (action === 'likes') {
-        setLike((prev) => !prev);
+        setLike(!like);
         setNumberOfLikes((prev) => (like ? prev - 1 : prev + 1));
       } else if (action === 'favorites') {
-        setHeart((prev) => !prev);
+        setHeart(!heart);
         setNumberOfHearts((prev) => (heart ? prev - 1 : prev + 1));
       } else if (action === 'hearts') {
-        setEmoji((prev) => !prev);
+        setEmoji(emoji);
         setNumberOfEmojis((prev) => (emoji ? prev - 1 : prev + 1));
       }
 
@@ -100,18 +100,14 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
     } else {
       console.error(`Failed to toggle ${action}`);
       toast.custom((t) => (
-        <CustomToast
-          t={t}
-          message={'Failed to toggle interaction'}
-          redEmoji={'✖'}
-        />
+        <CustomToast t={t} message={'حدث خطأ ما'} emoji={'😐'} />
       ));
     }
   }
 
   //? للبحث عن هذا البوست في قائمة المفضلة اذا موجود يتم تفعيل اللون الاحمر بأن المستخدم بالفعل أعجب بهذا البوست من قبل
   async function fetchFavoritePosts(id) {
-    const response = await fetch(`/api/favoritePosts&id=${id}`);
+    const response = await fetch(`/api/hearts&id=${id}`);
     const json = await response?.json();
 
     if (response.ok) {

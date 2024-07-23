@@ -45,7 +45,7 @@ export async function POST(req) {
           },
         }),
       ]);
-      return new Response(JSON.stringify({ message: 'Emoji removed' }), {
+      return new Response(JSON.stringify({ message: 'غير لذيذ' }), {
         status: 200,
       });
     } else {
@@ -66,7 +66,7 @@ export async function POST(req) {
           },
         }),
       ]);
-      return new Response(JSON.stringify({ message: 'Emoji added' }), {
+      return new Response(JSON.stringify({ message: 'لذيذ' }), {
         status: 201,
       });
     }

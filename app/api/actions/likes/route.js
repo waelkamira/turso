@@ -45,7 +45,7 @@ export async function POST(req) {
           },
         }),
       ]);
-      return new Response(JSON.stringify({ message: 'Like removed' }), {
+      return new Response(JSON.stringify({ message: 'لم يعجبني' }), {
         status: 200,
       });
     } else {
@@ -66,7 +66,7 @@ export async function POST(req) {
           },
         }),
       ]);
-      return new Response(JSON.stringify({ message: 'Like added' }), {
+      return new Response(JSON.stringify({ message: 'أعجبني' }), {
         status: 201,
       });
     }
