@@ -62,10 +62,10 @@ export default function Page() {
   };
 
   async function handleDeletePost(recipe) {
-    const response = await fetch('/api/favoritePosts', {
-      method: 'DELETE',
+    const response = await fetch(`/api/actions/hearts`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(recipe),
+      body: JSON.stringify({ mealId: recipe?.id, actionType: 'hearts' }),
     });
 
     if (response.ok) {

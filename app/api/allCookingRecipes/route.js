@@ -46,17 +46,39 @@ export async function PUT(req) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const searchParams = url.searchParams;
   const id = parseInt(searchParams.get('id'));
+  const { actionType, newActionValue } = await req.json();
 
   try {
-    const data = await req.json();
+    const meal = await prisma.meal.findUnique({ where: { id } });
+
+    let updateData = {};
+    if (actionType === 'hearts') {
+      const newHeartsValue = meal.hearts + (newActionValue === 1 ? 1 : -1);
+      updateData = {
+        hearts: newHeartsValue >= 0 ? newHeartsValue : meal.hearts,
+      };
+    } else if (actionType === 'likes') {
+      const newLikesValue = meal.likes + (newActionValue === 1 ? 1 : -1);
+      updateData = { likes: newLikesValue >= 0 ? newLikesValue : meal.likes };
+    } else if (actionType === 'emojis') {
+      const newEmojisValue = meal.emojis + (newActionValue === 1 ? 1 : -1);
+      updateData = {
+        emojis: newEmojisValue >= 0 ? newEmojisValue : meal.emojis,
+      };
+    }
+
     await prisma.meal.update({
       where: { id },
-      data: { ...data },
+      data: updateData,
     });
-    return new Response(JSON.stringify({ message: 'تم التعديل بنجاح' }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 200,
-    });
+
+    return new Response(
+      JSON.stringify({ message: 'تم التعديل بنجاح', newActionValue }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error('Error updating meal:', error);
     return new Response(JSON.stringify({ error: 'حدث خطأ ما' }), {

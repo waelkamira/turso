@@ -16,26 +16,19 @@ import LoadingPhoto from './LoadingPhoto';
 
 export default function SmallItem({ recipe, index, show = true, id = false }) {
   const [currentUser, setCurrentUser] = useState('');
-  const [favorites, setFavorites] = useState();
   const [numberOfLikes, setNumberOfLikes] = useState(recipe?.likes);
   const [numberOfEmojis, setNumberOfEmojis] = useState(recipe?.emojis);
   const [numberOfHearts, setNumberOfHearts] = useState(recipe?.hearts);
-
   const [like, setLike] = useState(false);
   const [heart, setHeart] = useState(false);
   const [emoji, setEmoji] = useState(false);
 
-  const { dispatch, action } = useContext(inputsContext);
+  const { dispatch } = useContext(inputsContext);
   const session = useSession();
   const router = useRouter();
   const path = usePathname();
 
   useEffect(() => {
-    if (recipe?.id) {
-      fetchActionStatus('likes', recipe.id, setLike);
-      fetchActionStatus('hearts', recipe.id, setHeart);
-      fetchActionStatus('emojis', recipe.id, setEmoji);
-    }
     if (typeof window !== 'undefined') {
       const userData = localStorage.getItem('CurrentUser');
       if (userData !== 'undefined') {
@@ -44,6 +37,27 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       }
     }
   }, [recipe?.id]);
+
+  async function updateRecipeActionNumbers(mealId, actionType, newActionValue) {
+    try {
+      const response = await fetch(`/api/allCookingRecipes?id=${mealId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          actionType,
+          newActionValue,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error(`Failed to update ${actionType} for meal ${mealId}`);
+      }
+    } catch (error) {
+      console.error('Error in updateRecipeActionNumbers:', error);
+    }
+  }
 
   async function handleInteraction(
     mealId,
@@ -68,15 +82,18 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       if (response.ok) {
         const result = await response.json();
         const newActionValue = result.newActionValue;
-        if (newActionValue === 1) {
-          setState(true);
-        } else {
-          setState(false);
-        }
-        const increment = newActionValue ? 1 : -1;
 
-        setState(newActionValue === 1);
-        setNumber((prev) => prev + increment);
+        // // تحديث الحالة
+        // setState(newActionValue === 1);
+
+        // تحديث العدد بشكل صحيح
+        // setNumber((prev) => {
+        //   const increment = newActionValue === 1 ? 1 : -1;
+        //   return prev + increment;
+        // });
+
+        // قم بتحديث العدد في قاعدة البيانات
+        await updateRecipeActionNumbers(mealId, action, newActionValue);
 
         toast.custom((t) => (
           <CustomToast
@@ -100,22 +117,6 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
     }
   }
 
-  async function fetchActionStatus(action, id, setState) {
-    try {
-      const response = await fetch(
-        `/api/actions/hearts?mealId=${id}&actionType=${action}`
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setState(data.exists);
-      } else {
-        setState(false);
-      }
-    } catch (error) {
-      console.error(`Error fetching ${action} status:`, error);
-      setState(false);
-    }
-  }
   //? لحذف أي بوست من أي مستخدم هذه الدالة خاصة بالأدمن فقط
   async function handleDeletePost(recipe) {
     const response = await fetch('/api/allCookingRecipes', {
@@ -139,6 +140,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       ));
     }
   }
+
   //? هذه الدالة للتأكد إذا كان التاريخ المدخل صحيحا أو لا
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -146,7 +148,6 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       ? 'Invalid date'
       : formatDistanceToNow(date, { addSuffix: true });
   };
-
   return (
     <>
       {!recipe && <Loading />}

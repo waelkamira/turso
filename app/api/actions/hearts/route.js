@@ -66,6 +66,7 @@ export async function POST(req) {
       });
     }
 
+    const meal = await prisma.meal.findUnique({ where: { id: mealId } });
     const existingAction = await prisma.action.findFirst({
       where: {
         userEmail: email,
@@ -76,10 +77,17 @@ export async function POST(req) {
     let newActionValue;
     if (existingAction) {
       newActionValue = existingAction[actionType] === 1 ? 0 : 1;
-      await prisma.action.update({
-        where: { id: existingAction.id },
-        data: { [actionType]: newActionValue },
-      });
+
+      if (newActionValue === 0) {
+        await prisma.action.delete({
+          where: { id: existingAction.id },
+        });
+      } else {
+        await prisma.action.update({
+          where: { id: existingAction.id },
+          data: { [actionType]: newActionValue },
+        });
+      }
     } else {
       newActionValue = 1;
       const newActionData = {
@@ -93,6 +101,18 @@ export async function POST(req) {
 
       await prisma.action.create({
         data: newActionData,
+      });
+    }
+
+    // تحديث عدد الـ hearts في الـ meal
+    if (actionType === 'hearts') {
+      const increment = newActionValue === 1 ? 1 : -1;
+      const newHeartsValue = meal.hearts + increment;
+      await prisma.meal.update({
+        where: { id: mealId },
+        data: {
+          hearts: newHeartsValue >= 0 ? newHeartsValue : meal.hearts,
+        },
       });
     }
 
