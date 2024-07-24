@@ -11,7 +11,7 @@ export async function GET(req) {
     const id = parseInt(searchParams.get('id'));
     // Calculate the number of documents to skip
     const skip = (page - 1) * limit;
-
+    // console.log('url', url);
     // Build the query object
     const query = {};
     if (id) {

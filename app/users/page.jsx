@@ -33,7 +33,7 @@ export default function Users() {
 
   async function fetchAllUsers() {
     const response = await fetch(
-      `/api/allUsers?pageNumber=${pageNumber}&pageSize=10&searchQuery=${findUser}`
+      `/api/allUsers?pageNumber=${pageNumber}&searchQuery=${findUser}`
     );
     const json = await response.json();
     if (response.ok) {

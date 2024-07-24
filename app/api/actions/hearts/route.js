@@ -8,21 +8,23 @@ export async function GET(req) {
     const searchParams = url.searchParams;
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
-    const id = parseInt(searchParams.get('mealId'));
+    const id = parseInt(searchParams.get('mealId')) || 0;
     const session = await getServerSession(authOptions);
+    const nonEmail = searchParams.get('nonEmail');
     const email = session?.user?.email;
     const skip = (page - 1) * limit;
 
     // Construct query based on email and/or mealId
     const query = {};
-    if (email) {
+    if (email && !nonEmail) {
       query.userEmail = email;
     }
 
-    if (!isNaN(id)) {
+    if (id) {
       query.mealId = id;
     }
 
+    console.log('query', query);
     // Fetch heart records with pagination
     const heartRecords = await prisma.heart.findMany({
       where: query,

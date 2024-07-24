@@ -30,38 +30,36 @@ export default function Page() {
       const res = await fetch(
         `/api/actions/hearts?page=${pageNumber}&limit=10`
       );
-      const data = await res?.json();
+      const data = await res.json();
       if (res.ok) {
         console.log('data', data);
 
-        fetchOneCookingRecipes(data);
+        // Collect the promises from the fetch operations
+        const promises = data.map(async (item) => {
+          console.log('item', item);
+          const response = await fetch(
+            `/api/allCookingRecipes?id=${item?.mealId}`
+          );
+          if (response.ok) {
+            const json = await response.json();
+            console.log('json', json);
+            return json[0];
+          } else {
+            throw new Error('Failed to fetch cooking recipe');
+          }
+        });
+
+        // Wait for all promises to resolve
+        const arr = await Promise.all(promises);
+        console.log('arr', arr);
+
+        // Set the user favorites
+        setUserFavorites(arr);
       }
     } catch (error) {
       console.error('Error fetching user favorites:', error);
     }
   };
-  //! هذا الكود لايعمل بشكل صحيح بطيء جدا
-  async function fetchOneCookingRecipes(favorites) {
-    console.log('favorites', favorites);
-
-    let arr = [];
-    const promises = favorites.map(async (item) => {
-      console.log('item', item);
-
-      const response = await fetch(`/api/allCookingRecipes?id=${item?.mealId}`);
-      const json = await response?.json();
-      if (response.ok) {
-        console.log('json', json);
-
-        arr.push(json[0]);
-      } else {
-        throw new Error('Failed to fetch cooking recipe');
-      }
-    });
-    console.log('arr', arr);
-
-    return setUserFavorites(arr);
-  }
 
   async function handleDeletePost(recipe) {
     const response = await fetch('/api/favoritePosts', {

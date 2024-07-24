@@ -45,66 +45,54 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
     // setActions();
   }, []);
 
-  // function setActions() {
-  //   const isLiked = recipe?.likes?.filter(
-  //     (item) => item === session?.data?.user?.email
-  //   );
-  //   if (isLiked?.length > 0) {
-  //     setLike(true);
-  //   }
-  //   const isEmoji = recipe?.emojis?.filter(
-  //     (item) => item === session?.data?.user?.email
-  //   );
-  //   if (isEmoji?.length > 0) {
-  //     setEmoji(true);
-  //   }
-  //   const isHeart = recipe?.hearts?.filter(
-  //     (item) => item === session?.data?.user?.email
-  //   );
-  //   if (isHeart?.length > 0) {
-  //     setHeart(true);
-  //   }
-  // }
   //? يتم تفعيل هذه الدالة عند الضغط على زر حفظ ليتم حفظ البوست الذي تم الضغط عليه من قبل المستخدم في قائمة مفضلاته
   //? أو سوف يتم حذف هذا البوست من قائمة مفضلة المستخدم إذا كان موجودا أي أن المستخدم لم يعد يريده في قائمته
 
   async function handleInteraction(mealId, action) {
-    if (action === 'likes') {
-      setNumberOfLikes((prev) => (like ? prev - 1 : prev + 1));
-    } else if (action === 'hearts') {
-      setNumberOfHearts((prev) => (heart ? prev - 1 : prev + 1));
-    } else if (action === 'emojis') {
-      setNumberOfEmojis((prev) => (emoji ? prev - 1 : prev + 1));
-    }
-    const response = await fetch(`/api/actions/${action}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ mealId }),
-    });
+    try {
+      const response = await fetch(`/api/actions/${action}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mealId }),
+      });
 
-    if (response.ok) {
-      const result = await response.json();
+      if (response.ok) {
+        const result = await response.json();
+        let increment = 0;
 
-      if (action === 'hearts') {
-        setHeart(!heart);
-      } else if (action === 'likes') {
-        setLike(!like);
-      } else if (action === 'emojis') {
-        setEmoji(!emoji);
+        // Determine whether to increment or decrement based on current state
+        if (action === 'likes') {
+          increment = like ? -1 : 1;
+          setLike(!like);
+          setNumberOfLikes((prev) => prev + increment);
+        } else if (action === 'hearts') {
+          increment = heart ? -1 : 1;
+          setHeart(!heart);
+          setNumberOfHearts((prev) => prev + increment);
+        } else if (action === 'emojis') {
+          increment = emoji ? -1 : 1;
+          setEmoji(!emoji);
+          setNumberOfEmojis((prev) => prev + increment);
+        }
+
+        toast.custom((t) => (
+          <CustomToast
+            t={t}
+            message={result.message}
+            greenEmoji={'✔'}
+            emoji={'😋'}
+          />
+        ));
+      } else {
+        console.error(`Failed to toggle ${action}`);
+        toast.custom((t) => (
+          <CustomToast t={t} message={'حدث خطأ ما'} emoji={'😐'} />
+        ));
       }
-
-      toast.custom((t) => (
-        <CustomToast
-          t={t}
-          message={result.message}
-          greenEmoji={'✔'}
-          emoji={'😋'}
-        />
-      ));
-    } else {
-      console.error(`Failed to toggle ${action}`);
+    } catch (error) {
+      console.error('Error in handleInteraction:', error);
       toast.custom((t) => (
         <CustomToast t={t} message={'حدث خطأ ما'} emoji={'😐'} />
       ));
@@ -116,13 +104,12 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       const response = await fetch(`/api/actions/hearts?mealId=${id}`);
       const data = await response.json();
 
-      if (response.ok && data.exists) {
-        setHeart(true);
-        console.log('Heart exists');
+      if (response.ok) {
+        setHeart(data.exists);
+        console.log(`Heart ${data.exists ? 'exists' : 'does not exist'}`);
       } else {
         setHeart(false);
-
-        console.log('Heart does not exist');
+        console.log('Heart status fetch failed');
       }
     } catch (error) {
       console.error('Error fetching heart status:', error);
