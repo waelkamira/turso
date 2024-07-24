@@ -12,31 +12,18 @@ CREATE TABLE "Meal" (
     "advise" TEXT,
     "link" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
+CREATE TABLE "Action" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "userEmail" TEXT NOT NULL,
+    "mealId" INTEGER NOT NULL,
     "hearts" INTEGER NOT NULL DEFAULT 0,
     "likes" INTEGER NOT NULL DEFAULT 0,
-    "emojis" INTEGER NOT NULL DEFAULT 0
-);
-
--- CreateTable
-CREATE TABLE "Like" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "userEmail" TEXT NOT NULL,
-    "mealId" INTEGER NOT NULL
-);
-
--- CreateTable
-CREATE TABLE "Emoji" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "userEmail" TEXT NOT NULL,
-    "mealId" INTEGER NOT NULL
-);
-
--- CreateTable
-CREATE TABLE "Heart" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "userEmail" TEXT NOT NULL,
-    "mealId" INTEGER NOT NULL
+    "emojis" INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT "Action_mealId_fkey" FOREIGN KEY ("mealId") REFERENCES "Meal" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable

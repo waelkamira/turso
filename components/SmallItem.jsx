@@ -31,6 +31,11 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
   const path = usePathname();
 
   useEffect(() => {
+    if (recipe?.id) {
+      fetchActionStatus('likes', recipe.id, setLike);
+      fetchActionStatus('hearts', recipe.id, setHeart);
+      fetchActionStatus('emojis', recipe.id, setEmoji);
+    }
     if (typeof window !== 'undefined') {
       const userData = localStorage.getItem('CurrentUser');
       if (userData !== 'undefined') {
@@ -38,44 +43,40 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
         setCurrentUser(user);
       }
     }
-    coloredHeart(recipe?.id);
-    coloredLike(recipe?.id);
-    coloredEmoji(recipe?.id);
+  }, [recipe?.id]);
 
-    // setActions();
-  }, []);
-
-  //? يتم تفعيل هذه الدالة عند الضغط على زر حفظ ليتم حفظ البوست الذي تم الضغط عليه من قبل المستخدم في قائمة مفضلاته
-  //? أو سوف يتم حذف هذا البوست من قائمة مفضلة المستخدم إذا كان موجودا أي أن المستخدم لم يعد يريده في قائمته
-
-  async function handleInteraction(mealId, action) {
+  async function handleInteraction(
+    mealId,
+    action,
+    currentState,
+    setState,
+    setNumber
+  ) {
     try {
-      const response = await fetch(`/api/actions/${action}`, {
+      const response = await fetch(`/api/actions/hearts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ mealId }),
+        body: JSON.stringify({
+          mealId,
+          actionType: action,
+          actionValue: currentState ? 0 : 1,
+        }),
       });
 
       if (response.ok) {
         const result = await response.json();
-        let increment = 0;
-
-        // Determine whether to increment or decrement based on current state
-        if (action === 'likes') {
-          increment = like ? -1 : 1;
-          setLike(!like);
-          setNumberOfLikes((prev) => prev + increment);
-        } else if (action === 'hearts') {
-          increment = heart ? -1 : 1;
-          setHeart(!heart);
-          setNumberOfHearts((prev) => prev + increment);
-        } else if (action === 'emojis') {
-          increment = emoji ? -1 : 1;
-          setEmoji(!emoji);
-          setNumberOfEmojis((prev) => prev + increment);
+        const newActionValue = result.newActionValue;
+        if (newActionValue === 1) {
+          setState(true);
+        } else {
+          setState(false);
         }
+        const increment = newActionValue ? 1 : -1;
+
+        setState(newActionValue === 1);
+        setNumber((prev) => prev + increment);
 
         toast.custom((t) => (
           <CustomToast
@@ -98,64 +99,23 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       ));
     }
   }
-  //? false وإلا ترجع true الوصفة ترجع  id اذا وجدت ايميل المستخدم و hearts هذه الدالة تبحث في جدول ال
-  async function coloredHeart(id = recipe?.id) {
-    try {
-      const response = await fetch(`/api/actions/hearts?mealId=${id}`);
-      const data = await response.json();
 
+  async function fetchActionStatus(action, id, setState) {
+    try {
+      const response = await fetch(
+        `/api/actions/hearts?mealId=${id}&actionType=${action}`
+      );
+      const data = await response.json();
       if (response.ok) {
-        setHeart(data.exists);
-        console.log(`Heart ${data.exists ? 'exists' : 'does not exist'}`);
+        setState(data.exists);
       } else {
-        setHeart(false);
-        console.log('Heart status fetch failed');
+        setState(false);
       }
     } catch (error) {
-      console.error('Error fetching heart status:', error);
-      setHeart(false);
+      console.error(`Error fetching ${action} status:`, error);
+      setState(false);
     }
   }
-
-  //? false وإلا ترجع true الوصفة ترجع  id اذا وجدت ايميل المستخدم و likes هذه الدالة تبحث في جدول ال
-  async function coloredLike(id = recipe?.id) {
-    try {
-      const response = await fetch(`/api/actions/likes?mealId=${id}`);
-      const data = await response.json();
-
-      if (response.ok && data.exists) {
-        setLike(true);
-        console.log('Like exists');
-      } else {
-        setLike(false);
-
-        console.log('Like does not exist');
-      }
-    } catch (error) {
-      console.error('Error fetching like status:', error);
-      setLike(false);
-    }
-  }
-  //? false وإلا ترجع true الوصفة ترجع  id اذا وجدت ايميل المستخدم و emojis هذه الدالة تبحث في جدول ال
-  async function coloredEmoji(id = recipe?.id) {
-    try {
-      const response = await fetch(`/api/actions/emojis?mealId=${id}`);
-      const data = await response.json();
-
-      if (response.ok && data.exists) {
-        setEmoji(true);
-        console.log('Emoji exists');
-      } else {
-        setEmoji(false);
-
-        console.log('Emoji does not exist');
-      }
-    } catch (error) {
-      console.error('Error fetching emoji status:', error);
-      setEmoji(false);
-    }
-  }
-
   //? لحذف أي بوست من أي مستخدم هذه الدالة خاصة بالأدمن فقط
   async function handleDeletePost(recipe) {
     const response = await fetch('/api/allCookingRecipes', {
@@ -256,8 +216,13 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
               <div
                 className="flex justify-center items-center gap-2 cursor-pointer hover:bg-seven p-1 lg:p-2 rounded-lg select-none"
                 onClick={() => {
-                  handleInteraction(recipe?.id, 'hearts'); // For hearts
-                  coloredHeart(recipe?.id);
+                  handleInteraction(
+                    recipe.id,
+                    'hearts',
+                    heart,
+                    setHeart,
+                    setNumberOfHearts
+                  );
                   if (session?.status === 'authenticated') {
                     if (!heart) {
                       setNumberOfHearts(numberOfHearts + 1);
@@ -300,8 +265,13 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
               <div
                 className="flex justify-center items-center gap-2 cursor-pointer hover:bg-seven p-1 lg:p-2 rounded-lg select-none"
                 onClick={() => {
-                  handleInteraction(recipe?.id, 'likes');
-                  coloredLike(recipe?.id);
+                  handleInteraction(
+                    recipe.id,
+                    'likes',
+                    like,
+                    setLike,
+                    setNumberOfLikes
+                  );
                   if (session?.status === 'authenticated') {
                     setLike(!like);
                     if (!like) {
@@ -342,8 +312,13 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
               <div
                 className="flex justify-center items-center gap-2 cursor-pointer hover:bg-seven py-1 px-2 rounded-lg select-none"
                 onClick={() => {
-                  handleInteraction(recipe?.id, 'emojis'); // For emojis
-                  coloredEmoji(recipe?.id);
+                  handleInteraction(
+                    recipe.id,
+                    'emojis',
+                    emoji,
+                    setEmoji,
+                    setNumberOfEmojis
+                  );
                   if (session?.status === 'authenticated') {
                     setEmoji(!emoji);
                     if (!emoji) {

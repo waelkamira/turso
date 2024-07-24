@@ -48,9 +48,9 @@ export default function CookingForm({
     theWay: '',
     advise: '',
     link: '',
-    hearts: 0,
-    likes: 0,
-    emojis: 0,
+    // hearts: 0,
+    // likes: 0,
+    // emojis: 0,
   });
   const { data, dispatch, imageError } = useContext(inputsContext);
 

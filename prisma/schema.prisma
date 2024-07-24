@@ -23,27 +23,18 @@ model Meal {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now())
 
-  hearts         Int  @default(0)
-  likes          Int  @default(0)
-  emojis         Int  @default(0)
+  actions        Action[] // العلاقة مع جدول Action
 }
 
-model Like {
+model Action {
   id        Int      @id @default(autoincrement())
   userEmail String
   mealId    Int
-}
-
-model Emoji {
-  id        Int      @id @default(autoincrement())
-  userEmail String
-  mealId    Int
-}
-
-model Heart {
-  id        Int      @id @default(autoincrement())
-  userEmail String
-  mealId    Int
+  hearts    Int      @default(0)
+  likes     Int      @default(0)
+  emojis    Int      @default(0)
+ 
+  meal      Meal     @relation(fields: [mealId], references: [id])
 }
 
 model User {
