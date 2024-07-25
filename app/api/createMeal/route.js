@@ -2,6 +2,8 @@ import prisma from '../../../lib/PrismaClient';
 
 export async function POST(req) {
   const data = await req.json();
+  console.log('data', data);
+
   const meal = await prisma.meal.create({
     data: { ...data },
   });

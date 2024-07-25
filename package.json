@@ -27,6 +27,7 @@
     "canvas-confetti": "^1.9.3",
     "cloudinary": "^2.2.0",
     "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
     "date-fns": "^3.6.0",
     "debounce": "^2.1.0",
     "dotenv": "^16.4.5",
@@ -51,6 +52,7 @@
     "react-select": "^5.8.0",
     "redis": "^4.6.15",
     "sqlite3": "^5.1.7",
+    "uuid": "^10.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

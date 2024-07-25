@@ -12,6 +12,7 @@ import { Confetti } from './SuccessComponent';
 import { getVideoIdAndPlatform } from './youtubeUtils';
 import { MdOutlineAddPhotoAlternate } from 'react-icons/md';
 import { TbArrowBigLeftLinesFilled } from 'react-icons/tb';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function CookingForm({
   setIsVisible,

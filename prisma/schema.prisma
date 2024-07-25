@@ -1,3 +1,5 @@
+
+
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
@@ -9,7 +11,7 @@ datasource db {
 }
 
 model Meal {
-  id             Int      @id @default(autoincrement())
+  id             String   @id @default(uuid())
   userName       String
   createdBy      String
   userImage      String
@@ -22,31 +24,144 @@ model Meal {
   link           String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now())
-  hearts         Int      @default(0)
+  hearts         Int      @default(0) // يجب أن يكون من نوع Int وليس String
   likes          Int      @default(0)
   emojis         Int      @default(0)
-  actions        Action[] // العلاقة مع جدول Action
 }
 
 model Action {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   userEmail String
-  mealId    Int
-  hearts    Int      @default(0)
+  mealId    String
+  hearts    Int      @default(0) // يجب أن يكون من نوع Int وليس String
   likes     Int      @default(0)
   emojis    Int      @default(0)
- 
-  meal      Meal     @relation(fields: [mealId], references: [id])
 }
 
+
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   name      String   @unique
   email     String   @unique
   password  String?
-  isAdmin   Boolean  @default(false)
+  isAdmin   String   @default("false") // تحويل من Boolean إلى String
   image     String   @default("https://res.cloudinary.com/dh2xlutfu/image/upload/v1718369814/items/uefgzp5uba74cgiwnfdf.png")
   googleId  String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }
+
+
+
+
+// generator client {
+//   provider        = "prisma-client-js"
+//   previewFeatures = ["driverAdapters"]
+// }
+
+// datasource db {
+//   provider = "sqlite"
+//   url      = "file:./dev.db"
+// }
+
+// model Meal {
+//   id             Int      @id @default(autoincrement())
+//   userName       String
+//   createdBy      String
+//   userImage      String
+//   mealName       String
+//   selectedValue  String
+//   image          String
+//   ingredients    String
+//   theWay         String
+//   advise         String?
+//   link           String?
+//   createdAt      DateTime @default(now())
+//   updatedAt      DateTime @default(now())
+//   hearts         Int      @default(0)
+//   likes          Int      @default(0)
+//   emojis         Int      @default(0)
+//   actions        Action[] // العلاقة مع جدول Action
+// }
+
+// model Action {
+//   id        Int      @id @default(autoincrement())
+//   userEmail String
+//   mealId    Int
+//   hearts    Int      @default(0)
+//   likes     Int      @default(0)
+//   emojis    Int      @default(0)
+ 
+//   meal      Meal     @relation(fields: [mealId], references: [id])
+// }
+
+// model User {
+//   id        Int      @id @default(autoincrement())
+//   name      String   @unique
+//   email     String   @unique
+//   password  String?
+//   isAdmin   Boolean  @default(false)
+//   image     String   @default("https://res.cloudinary.com/dh2xlutfu/image/upload/v1718369814/items/uefgzp5uba74cgiwnfdf.png")
+//   googleId  String?  @unique
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @default(now())
+// }
+
+
+
+
+// generator client {
+//   provider        = "prisma-client-js"
+//   previewFeatures = ["driverAdapters"]
+// }
+
+// datasource db {
+//   provider = "sqlite"
+//   url      = "file:./dev.db"
+// }
+
+// model Meal {
+//   id             Int      @id @default(autoincrement())
+//   userName       String
+//   createdBy      String
+//   userImage      String
+//   mealName       String
+//   selectedValue  String
+//   image          String
+//   ingredients    String
+//   theWay         String
+//   advise         String?
+//   link           String?
+//   createdAt      DateTime @default(now())
+//   updatedAt      DateTime @default(now())
+//   hearts         Float    @default(0)
+//   likes          Float    @default(0)
+//   emojis         Float    @default(0)
+//   actions        Action[] // العلاقة مع جدول Action
+// }
+
+// model Action {
+//   id        Int      @id @default(autoincrement())
+//   userEmail String
+//   mealId    Int
+//   hearts    Float    @default(0)
+//   likes     Float    @default(0)
+//   emojis    Float    @default(0)
+ 
+//   meal      Meal     @relation(fields: [mealId], references: [id])
+// }
+
+// model User {
+//   id        Int      @id @default(autoincrement())
+//   name      String   @unique
+//   email     String   @unique
+//   password  String?
+//   isAdmin   Boolean  @default(false)
+//   image     String   @default("https://res.cloudinary.com/dh2xlutfu/image/upload/v1718369814/items/uefgzp5uba74cgiwnfdf.png")
+//   googleId  String?  @unique
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @default(now())
+// }
+
+
+

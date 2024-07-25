@@ -1,4 +1,5 @@
 import prisma from '../../../../lib/PrismaClient';
+import prisma2 from '../../../../lib/PrismaClient2';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../authOptions/route';
 
@@ -9,7 +10,7 @@ export async function GET(req) {
     const searchParams = url.searchParams;
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
-    const mealId = parseInt(searchParams.get('mealId')) || 0;
+    const mealId = searchParams.get('mealId') || '';
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
     const nonEmail = searchParams.get('nonEmail');
@@ -23,13 +24,22 @@ export async function GET(req) {
       query.mealId = mealId;
     }
 
-    const actionRecords = await prisma.action.findMany({
+    // Fetch action records from both databases
+    const actionRecords1 = await prisma.action.findMany({
       where: query,
       skip,
       take: limit,
     });
 
-    return new Response(JSON.stringify(actionRecords), {
+    const actionRecords2 = await prisma2.action.findMany({
+      where: query,
+      skip,
+      take: limit,
+    });
+
+    const combinedActionRecords = [...actionRecords1, ...actionRecords2];
+
+    return new Response(JSON.stringify(combinedActionRecords), {
       headers: { 'Content-Type': 'application/json' },
       status: 200,
     });
@@ -66,8 +76,17 @@ export async function POST(req) {
       });
     }
 
-    const meal = await prisma.meal.findUnique({ where: { id: mealId } });
-    const existingAction = await prisma.action.findFirst({
+    const meal1 = await prisma.meal.findUnique({ where: { id: mealId } });
+    const meal2 = await prisma2.meal.findUnique({ where: { id: mealId } });
+
+    const existingAction1 = await prisma.action.findFirst({
+      where: {
+        userEmail: email,
+        mealId: mealId,
+      },
+    });
+
+    const existingAction2 = await prisma2.action.findFirst({
       where: {
         userEmail: email,
         mealId: mealId,
@@ -75,16 +94,29 @@ export async function POST(req) {
     });
 
     let newActionValue;
-    if (existingAction) {
-      newActionValue = existingAction[actionType] === 1 ? 0 : 1;
+    if (existingAction1) {
+      newActionValue = existingAction1[actionType] === 1 ? 0 : 1;
 
       if (newActionValue === 0) {
         await prisma.action.delete({
-          where: { id: existingAction.id },
+          where: { id: existingAction1.id },
         });
       } else {
         await prisma.action.update({
-          where: { id: existingAction.id },
+          where: { id: existingAction1.id },
+          data: { [actionType]: newActionValue },
+        });
+      }
+    } else if (existingAction2) {
+      newActionValue = existingAction2[actionType] === 1 ? 0 : 1;
+
+      if (newActionValue === 0) {
+        await prisma2.action.delete({
+          where: { id: existingAction2.id },
+        });
+      } else {
+        await prisma2.action.update({
+          where: { id: existingAction2.id },
           data: { [actionType]: newActionValue },
         });
       }
@@ -102,18 +134,32 @@ export async function POST(req) {
       await prisma.action.create({
         data: newActionData,
       });
+      await prisma2.action.create({
+        data: newActionData,
+      });
     }
 
     // تحديث عدد الـ hearts في الـ meal
     if (actionType === 'hearts') {
       const increment = newActionValue === 1 ? 1 : -1;
-      const newHeartsValue = meal.hearts + increment;
-      await prisma.meal.update({
-        where: { id: mealId },
-        data: {
-          hearts: newHeartsValue >= 0 ? newHeartsValue : meal.hearts,
-        },
-      });
+      if (meal1) {
+        const newHeartsValue1 = meal1.hearts + increment;
+        await prisma.meal.update({
+          where: { id: mealId },
+          data: {
+            hearts: newHeartsValue1 >= 0 ? newHeartsValue1 : meal1.hearts,
+          },
+        });
+      }
+      if (meal2) {
+        const newHeartsValue2 = meal2.hearts + increment;
+        await prisma2.meal.update({
+          where: { id: mealId },
+          data: {
+            hearts: newHeartsValue2 >= 0 ? newHeartsValue2 : meal2.hearts,
+          },
+        });
+      }
     }
 
     let message = 'Action updated successfully';

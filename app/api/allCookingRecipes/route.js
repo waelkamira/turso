@@ -1,4 +1,5 @@
 import prisma from '../../../lib/PrismaClient';
+import prisma2 from '../../../lib/PrismaClient2';
 
 export async function GET(req) {
   try {
@@ -8,28 +9,54 @@ export async function GET(req) {
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
     const selectedValue = searchParams.get('selectedValue');
-    const id = parseInt(searchParams.get('id'));
-    // Calculate the number of documents to skip
+    const id = searchParams.get('id'); // Keep as string
     const skip = (page - 1) * limit;
-    // console.log('url', url);
+    console.log('id', Number(id));
     // Build the query object
     const query = {};
-    if (id) {
-      query.id = id;
-    }
     if (selectedValue) {
       query.selectedValue = selectedValue;
     }
 
-    // Fetch the meals and related users
-    const allCookingRecipes = await prisma.meal.findMany({
-      where: Object.keys(query).length ? query : undefined,
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit,
-    });
+    // Fetch the meal from the first database
+    let mealFromCooking = null;
+    if (id) {
+      mealFromCooking = await prisma.meal.findUnique({
+        where: { id: id }, // Convert to number for the first database
+      });
+    } else {
+      mealFromCooking = await prisma.meal.findMany({
+        where: Object.keys(query).length ? query : undefined,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      });
+    }
+    // console.log('mealFromCooking', mealFromCooking);
 
-    return new Response(JSON.stringify(allCookingRecipes), {
+    // Fetch the meal from the second database
+    let mealFrom2Cooking = null;
+    if (id) {
+      mealFrom2Cooking = await prisma2.meal.findUnique({
+        where: { id: id }, // Use string id for the second database
+      });
+    } else {
+      mealFrom2Cooking = await prisma2.meal.findMany({
+        where: Object.keys(query).length ? query : undefined,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      });
+    }
+    // console.log('mealFrom2Cooking', mealFrom2Cooking);
+
+    // Combine results
+    const combinedMeals = id
+      ? [mealFromCooking, mealFrom2Cooking].filter(Boolean) // Filter out null/undefined results
+      : [...mealFromCooking, ...mealFrom2Cooking];
+
+    // console.log('combinedMeals', combinedMeals);
+    return new Response(JSON.stringify(combinedMeals), {
       headers: { 'Content-Type': 'application/json' },
       status: 200,
     });
@@ -51,20 +78,19 @@ export async function PUT(req) {
   try {
     const meal = await prisma.meal.findUnique({ where: { id } });
 
+    // دالة مساعدة لحساب القيم المحدثة
+    function getUpdatedValue(currentValue, actionValue) {
+      const newValue = currentValue + (actionValue === 1 ? 1 : -1);
+      return newValue >= 0 ? newValue : currentValue;
+    }
+
     let updateData = {};
     if (actionType === 'hearts') {
-      const newHeartsValue = meal.hearts + (newActionValue === 1 ? 1 : -1);
-      updateData = {
-        hearts: newHeartsValue >= 0 ? newHeartsValue : meal.hearts,
-      };
+      updateData = { hearts: getUpdatedValue(meal.hearts, newActionValue) };
     } else if (actionType === 'likes') {
-      const newLikesValue = meal.likes + (newActionValue === 1 ? 1 : -1);
-      updateData = { likes: newLikesValue >= 0 ? newLikesValue : meal.likes };
+      updateData = { likes: getUpdatedValue(meal.likes, newActionValue) };
     } else if (actionType === 'emojis') {
-      const newEmojisValue = meal.emojis + (newActionValue === 1 ? 1 : -1);
-      updateData = {
-        emojis: newEmojisValue >= 0 ? newEmojisValue : meal.emojis,
-      };
+      updateData = { emojis: getUpdatedValue(meal.emojis, newActionValue) };
     }
 
     await prisma.meal.update({

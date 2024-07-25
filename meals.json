@@ -3403,32 +3403,6 @@
 },
 {
   "_id": {
-    "$oid": "669d24ce1efcd543b71cc679"
-  },
-  "userName": "samer",
-  "createdBy": "samer@gmail.com",
-  "userImage": "https://res.cloudinary.com/dh2xlutfu/image/upload/v1720033330/qvvkquzk4djn2bl9jcwb.jpg",
-  "mealName": "lkl",
-  "selectedValue": "شوربات",
-  "image": "https://i.imgur.com/XBsIU5F.jpeg",
-  "ingredients": "lkl",
-  "theWay": "lkl",
-  "advise": "",
-  "link": "",
-  "favorite": false,
-  "usersWhoLikesThisRecipe": [],
-  "usersWhoPutEmojiOnThisRecipe": [],
-  "usersWhoPutHeartOnThisRecipe": [],
-  "createdAt": {
-    "$date": "2024-07-21T15:10:06.705Z"
-  },
-  "updatedAt": {
-    "$date": "2024-07-21T15:10:06.705Z"
-  },
-  "__v": 0
-},
-{
-  "_id": {
     "$oid": "669d25991efcd543b71cc6a0"
   },
   "userName": "samer",
@@ -3481,53 +3455,105 @@
 },
 {
   "_id": {
-    "$oid": "669d27a31c3a1e2d22a81a7f"
+    "$oid": "669e8a92c54733318a26933a"
   },
-  "userName": "samer",
-  "createdBy": "samer@gmail.com",
-  "userImage": "https://res.cloudinary.com/dh2xlutfu/image/upload/v1720033330/qvvkquzk4djn2bl9jcwb.jpg",
-  "mealName": "htht",
-  "selectedValue": "شوربات",
-  "image": "https://i.imgur.com/1fDAxaQ.jpeg",
-  "ingredients": "hth",
-  "theWay": "hth",
+  "userName": "رؤى",
+  "createdBy": "ruaarifai9@gmail.com",
+  "userImage": "https://res.cloudinary.com/dh2xlutfu/image/upload/v1720899325/%D9%A2%D9%A0%D9%A2%D9%A4%D9%A0%D9%A6%D9%A1%D9%A9_%D9%A1%D9%A5%D9%A4%D9%A5%D9%A2%D9%A2_p1u0vl.jpg",
+  "mealName": "حلا البغرير",
+  "selectedValue": "حلويات",
+  "image": "https://i.imgur.com/TezKrS1.jpeg",
+  "ingredients": "السميد : 2 كوب\n- الدقيق الأبيض : كوب\n- خميرة : كيسان (للحلويات)\n- ملح : نصف ملعقة صغيرة\n- خميرة : ملعقة صغيرة\n- ماء دافئ : 4 اكواب\n- العسل : كوب\n",
+  "theWay": "ضعي في وعاء كبير كلاً من: السميد، والدقيق الأبيض، وخميرة الحلويات، والملح، والخميرة.\nأضيفي الماء على المكوّنات السابقة، ثم امزجي هذا الخليط جيّداً، واتركيه لمدّة 15 دقيقة حتى يرتاح.\nأحضري مقلاة الغرير الخاصّة، وأوقدي النار، وباستخدام مغرفة كبيرة وزّعي الخليط جيّداً بشرط المحافظة على الشكل الدائري.\nكرري تلك الخطوة السابقة حتى انتهاء الكمية.\nقدمي البغرير مباشرة مع كوب العسل في طبق التقديم.",
   "advise": "",
-  "link": "",
+  "link": "https://www.youtube.com/embed/FjGPw7Vlm-I?si=wRO7ijyhi96tQi51",
   "favorite": false,
   "usersWhoLikesThisRecipe": [],
   "usersWhoPutEmojiOnThisRecipe": [],
   "usersWhoPutHeartOnThisRecipe": [],
   "createdAt": {
-    "$date": "2024-07-21T15:22:11.173Z"
+    "$date": "2024-07-22T16:36:34.495Z"
   },
   "updatedAt": {
-    "$date": "2024-07-21T15:22:11.173Z"
+    "$date": "2024-07-22T16:36:34.495Z"
   },
   "__v": 0
 },
 {
   "_id": {
-    "$oid": "669d285f36aff3a458a1e7b3"
+    "$oid": "669e8c22c54733318a269342"
   },
-  "userName": "samer",
-  "createdBy": "samer@gmail.com",
-  "userImage": "https://res.cloudinary.com/dh2xlutfu/image/upload/v1720033330/qvvkquzk4djn2bl9jcwb.jpg",
-  "mealName": "jkj",
-  "selectedValue": "شوربات",
-  "image": "https://i.imgur.com/pRnZhSL.jpeg",
-  "ingredients": "kjk",
-  "theWay": "kjk",
+  "userName": "رؤى",
+  "createdBy": "ruaarifai9@gmail.com",
+  "userImage": "https://res.cloudinary.com/dh2xlutfu/image/upload/v1720899325/%D9%A2%D9%A0%D9%A2%D9%A4%D9%A0%D9%A6%D9%A1%D9%A9_%D9%A1%D9%A5%D9%A4%D9%A5%D9%A2%D9%A2_p1u0vl.jpg",
+  "mealName": "حلا كعب الغزال",
+  "selectedValue": "حلويات",
+  "image": "https://i.imgur.com/oXLZvNL.jpeg",
+  "ingredients": "لوز : 650 غم (أو ثلاثة أرباع الكوب، مطحون)\n- حليب نستله المكثف المحلى : علبة (أو 397 غ)\n- ماء الورد : 3 ملاعق كبيرة",
+  "theWay": "يُخلط مسحوق اللّوز مع حليب نستله المكثّف المحلّى وماء الورد لتكوين عجينة طريّة.\n\n2. تُلفّ كمية صغيرة من خليط اللّوز بواسطة اليد لتكوّن كرة صغيرة.\n\n3. تُحضّر أشكال كعب الغزال (هِلال)، وتُخبز في فرن محمّى على حرارة 140 درجة مئوية لمدةٍ تتراوح بين 6 و9 دقائق.\n\n ",
   "advise": "",
-  "link": "",
+  "link": "https://www.youtube.com/embed/h4G-2r2b84w?si=GLW7WD3pNBUJCbA6",
   "favorite": false,
   "usersWhoLikesThisRecipe": [],
   "usersWhoPutEmojiOnThisRecipe": [],
   "usersWhoPutHeartOnThisRecipe": [],
   "createdAt": {
-    "$date": "2024-07-21T15:25:19.363Z"
+    "$date": "2024-07-22T16:43:14.871Z"
   },
   "updatedAt": {
-    "$date": "2024-07-21T15:25:19.363Z"
+    "$date": "2024-07-22T16:43:14.871Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "669e8cda60581eb0e1f0c195"
+  },
+  "userName": "رؤى",
+  "createdBy": "ruaarifai9@gmail.com",
+  "userImage": "https://res.cloudinary.com/dh2xlutfu/image/upload/v1720899325/%D9%A2%D9%A0%D9%A2%D9%A4%D9%A0%D9%A6%D9%A1%D9%A9_%D9%A1%D9%A5%D9%A4%D9%A5%D9%A2%D9%A2_p1u0vl.jpg",
+  "mealName": "الشعيرية بالسكر",
+  "selectedValue": "حلويات",
+  "image": "https://i.imgur.com/sxUb1IR.jpeg",
+  "ingredients": "شعيرية : كوب\n- ماء ساخن : كوبان\n- الزيت النباتي : ملعقتان كبيرتان\n- سكر : حسب الرغبة (للتزيين)\n- القرفة : ملعقة صغيرة (مطحونة / للتزيين)",
+  "theWay": "ضعي الزيت النباتي بقدر على النار ثم أضيفي الشعيرية وقلبيها حتى تتحمص ويتغير لونها.\n\n2. صبي الماء الساخن على الشعيرية واتركيها حتى تتفلفل وتنضج.\n\n3. اسكبي الشعيرية بأطباق التقديم وزينيها بالسكر والقرفة المطحونة وقدميها ساخنة.",
+  "advise": "",
+  "link": "https://www.youtube.com/embed/h4G-2r2b84w?si=RomPBA6JSdy9P94o",
+  "favorite": false,
+  "usersWhoLikesThisRecipe": [],
+  "usersWhoPutEmojiOnThisRecipe": [],
+  "usersWhoPutHeartOnThisRecipe": [],
+  "createdAt": {
+    "$date": "2024-07-22T16:46:18.987Z"
+  },
+  "updatedAt": {
+    "$date": "2024-07-22T16:46:18.987Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "669f56d6a7064c393bd9d6c1"
+  },
+  "userName": "بهيجة اشرق لبن ",
+  "createdBy": "marwa123569@gmil.com",
+  "userImage": "https://res.cloudinary.com/dh2xlutfu/image/upload/v1721044634/IMG-20240715-WA0002_mva79d.jpg",
+  "mealName": "الفلافل المحشية ",
+  "selectedValue": "وجبة رئيسية",
+  "image": "https://i.imgur.com/guntGSH.jpeg",
+  "ingredients": "لتحضير الفلافل :\nالفول : 500 غراماً (منقوع لليلة كاملة)\nالكزبرة : ربع كوب (مفرومة)\nالبصل : 1 حبة (متوسط الحجم / مفروم)\nالثوم : 3 فصوص (مهروس)\nملح : نصف ملعقة صغيرة\nفلفل أسود : ربع ملعقة صغيرة\nالكمون : نصف ملعقة صغيرة\n- لتحضير الحشوة :\nالبصل : 1 حبة (مفروم)\nسماق : ملعقة صغيرة\nبابريكا : ملعقة صغيرة\nملح : ربع ملعقة صغيرة\n- الزيت النباتي : حسب الحاجة (للقلي)",
+  "theWay": "لتحضير الفلافل: في محضرة الطعام، ضعي الفول، البصل، الكزبرة، الثوم، الكمون، الملح والفلفل الأسود، إطحني المزيج حتى تحصلي على قوام عجينة.\nلتحضير الحشوة: سخّني القليل من الزيت النباتي في قدر على حرارة متوسطة. أضيفي البصل، السماق، البابريكا والملح. قلّبي المكونات حتى يذبل البصل.\n خذي قسماً من عجينة الفلافل وافرديه في راحة يدك.\n أضيفي ملعقة كبيرة من الحشوة في وسط العجينة.\n أغلقي هذه الأخيرة حتى تحصلي على شكل قرص. ضعي الفلافل المحشية في طبق. كرري العملية حتى انتهاء الكمية.\nسخّني كمية وافرة من الزيت في قدر على حرارة متوسطة. إقلي الفلافل حتى يصبح لونها داكناً.\n صفّي الفلافل من الزيت وضعيها على محارم ورقية في طبق.\n ",
+  "advise": "",
+  "link": "https://www.youtube.com/embed/LH8Nuz3_J0k?si=5-lV4EGNENIBKK-6",
+  "favorite": false,
+  "usersWhoLikesThisRecipe": [],
+  "usersWhoPutEmojiOnThisRecipe": [],
+  "usersWhoPutHeartOnThisRecipe": [],
+  "createdAt": {
+    "$date": "2024-07-23T07:08:06.314Z"
+  },
+  "updatedAt": {
+    "$date": "2024-07-23T07:08:06.314Z"
   },
   "__v": 0
 }]

@@ -16,9 +16,11 @@ import LoadingPhoto from './LoadingPhoto';
 
 export default function SmallItem({ recipe, index, show = true, id = false }) {
   const [currentUser, setCurrentUser] = useState('');
+
   const [numberOfLikes, setNumberOfLikes] = useState(recipe?.likes);
   const [numberOfEmojis, setNumberOfEmojis] = useState(recipe?.emojis);
   const [numberOfHearts, setNumberOfHearts] = useState(recipe?.hearts);
+
   const [like, setLike] = useState(false);
   const [heart, setHeart] = useState(false);
   const [emoji, setEmoji] = useState(false);
@@ -36,7 +38,24 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
         setCurrentUser(user);
       }
     }
+
+    checkRecipeActionsStatus(recipe);
   }, [recipe?.id]);
+
+  async function checkRecipeActionsStatus(recipe) {
+    try {
+      const response = await fetch(`/api/actions/hearts?mealId=${recipe?.id}`);
+      const json = await response?.json();
+      if (response.ok) {
+        console.log('json', json);
+        setLike(json[0]?.likes === 1);
+        setHeart(json[0]?.hearts === 1);
+        setEmoji(json[0]?.emojis === 1);
+      }
+    } catch (error) {
+      console.error('Error in updateRecipeActionNumbers:', error);
+    }
+  }
 
   async function updateRecipeActionNumbers(mealId, actionType, newActionValue) {
     try {
@@ -66,6 +85,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
     setState,
     setNumber
   ) {
+    setState(!action);
     try {
       const response = await fetch(`/api/actions/hearts`, {
         method: 'POST',
@@ -82,16 +102,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       if (response.ok) {
         const result = await response.json();
         const newActionValue = result.newActionValue;
-
-        // // تحديث الحالة
-        // setState(newActionValue === 1);
-
-        // تحديث العدد بشكل صحيح
-        // setNumber((prev) => {
-        //   const increment = newActionValue === 1 ? 1 : -1;
-        //   return prev + increment;
-        // });
-
+        setState(true);
         // قم بتحديث العدد في قاعدة البيانات
         await updateRecipeActionNumbers(mealId, action, newActionValue);
 
