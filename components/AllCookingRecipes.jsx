@@ -25,7 +25,7 @@ export default function AllCookingRecipes() {
   async function fetchAllCookingRecipes() {
     try {
       const response = await fetch(
-        `/api/allCookingRecipes?page=${pageNumber}&limit=10`
+        `/api/allCookingRecipes?page=${pageNumber}&limit=5`
       );
       if (response.ok) {
         const json = await response.json();
@@ -50,7 +50,7 @@ export default function AllCookingRecipes() {
         ))
       )}
       <div className="flex items-center justify-around sm:my-4 sm:mt-8">
-        {allCookingRecipes?.length >= 10 && (
+        {allCookingRecipes?.length >= 5 && (
           <Link href={'#post1'}>
             <div
               className="flex items-center justify-around cursor-pointer"

@@ -27,7 +27,7 @@ export default function Page() {
 
   const fetchUserFavorites = async () => {
     try {
-      const res = await fetch(`/api/actions?page=${pageNumber}&limit=10`);
+      const res = await fetch(`/api/actions?page=${pageNumber}&limit=5`);
       const data = await res.json();
       if (res.ok) {
         console.log('data', data);

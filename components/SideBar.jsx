@@ -17,6 +17,7 @@ export default function SideBar() {
   const [newImage, setNewImage] = useState('');
   const user = CurrentUser();
 
+  console.log('user', user);
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const ima = localStorage.getItem('image');

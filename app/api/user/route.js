@@ -1,6 +1,4 @@
 import prisma from '../../../lib/PrismaClient';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../authOptions/route';
 
 export async function PUT(req) {
   try {
@@ -17,25 +15,56 @@ export async function PUT(req) {
     return new Response(JSON.stringify({ error: 'Internal Server Error' }));
   }
 }
-//! req  حاول ارسال الايميل مع ال   getServerSession تظهر مشكلة عند بناء التطبيق قد يكون سببها
-//FIXME
-export async function GET() {
-  try {
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
 
-    if (!email) {
-      return new Response(JSON.stringify({ error: 'User not authenticated' }));
-    }
+export async function GET(req) {
+  const { searchParams } = new URL(req.url);
+  const pageNumber = parseInt(searchParams.get('pageNumber') || '1', 10);
+  const limit = parseInt(searchParams.get('limit') || '10', 10);
+  const searchQuery = searchParams.get('searchQuery') || '';
+  const email = searchParams.get('email') || '';
+  console.log('email ************* ', email);
 
+  if (email) {
     const user = await prisma.user.findUnique({
       where: { email },
     });
+    return Response.json(user);
+  }
 
-    return new Response(JSON.stringify(user ? [user] : []));
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        email: {
+          contains: searchQuery,
+        },
+      },
+      skip: (pageNumber - 1) * limit,
+      take: limit,
+    });
+
+    return new Response(JSON.stringify(users), { status: 200 });
   } catch (error) {
-    console.error('Error fetching user:', error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }));
+    console.error('Error fetching users:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+    });
+  }
+}
+
+export async function DELETE(req) {
+  const { email } = await req.json();
+
+  try {
+    const deleteUser = await prisma.user.delete({
+      where: { email },
+    });
+
+    return new Response(JSON.stringify(deleteUser), { status: 200 });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+    });
   }
 }
 

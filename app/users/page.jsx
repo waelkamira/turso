@@ -33,7 +33,7 @@ export default function Users() {
 
   async function fetchAllUsers() {
     const response = await fetch(
-      `/api/allUsers?pageNumber=${pageNumber}&searchQuery=${findUser}`
+      `/api/user?pageNumber=${pageNumber}&searchQuery=${findUser}`
     );
     const json = await response.json();
     if (response.ok) {
@@ -47,7 +47,7 @@ export default function Users() {
         <CustomToast t={t} message={'لايمكن حذف الأدمن ✖'} />
       ));
     }
-    const response = await fetch('/api/allUsers', {
+    const response = await fetch('/api/user', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user),

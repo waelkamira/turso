@@ -6,7 +6,7 @@ export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page')) || 1;
-    const limit = parseInt(searchParams.get('limit')) || 10;
+    const limit = parseInt(searchParams.get('limit')) || 5;
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 
@@ -120,7 +120,7 @@ export async function DELETE(req) {
 //   await ensureConnection();
 //   const { searchParams } = new URL(req.url);
 //   const page = parseInt(searchParams.get('page') || 1);
-//   const limit = parseInt(searchParams.get('limit') || 10);
+//   const limit = parseInt(searchParams.get('limit') || 5);
 //   const session = await getServerSession(authOptions);
 //   const email = session?.user?.email;
 

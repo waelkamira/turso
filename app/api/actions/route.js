@@ -8,7 +8,7 @@ export async function GET(req) {
     const url = new URL(req.url);
     const searchParams = url.searchParams;
     const page = parseInt(searchParams.get('page')) || 1;
-    const limit = parseInt(searchParams.get('limit')) || 10;
+    const limit = parseInt(searchParams.get('limit')) || 5;
     const mealId = searchParams.get('mealId') || '';
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
@@ -145,7 +145,7 @@ export async function POST(req) {
 //     const url = new URL(req.url);
 //     const searchParams = url.searchParams;
 //     const page = parseInt(searchParams.get('page')) || 1;
-//     const limit = parseInt(searchParams.get('limit')) || 10;
+//     const limit = parseInt(searchParams.get('limit')) || 5;
 //     const id = parseInt(searchParams.get('mealId')) || 0;
 //     const session = await getServerSession(authOptions);
 //     const nonEmail = searchParams.get('nonEmail');

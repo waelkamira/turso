@@ -30,24 +30,32 @@ export default function MyRecipes() {
   const router = useRouter();
 
   useEffect(() => {
-    fetchMyRecipes();
-  }, [pageNumber]);
+    if (session) {
+      fetchMyRecipes();
+    }
+  }, [pageNumber, session]);
 
   const fetchMyRecipes = async () => {
-    await fetch(`/api/myRecipes?page=${pageNumber}&limit=10`)
-      .then((res) => res?.json())
-      .then((res) => {
-        setMyRecipes(res);
-        dispatch({ type: 'MY_RECIPES', payload: res });
-      });
+    if (session) {
+      const email = session?.data?.user?.email;
+      console.log('email ******', email);
+
+      await fetch(`/api/myRecipes?page=${pageNumber}&email=${email}&limit=5`)
+        .then((res) => res?.json())
+        .then((res) => {
+          setMyRecipes(res);
+          dispatch({ type: 'MY_RECIPES', payload: res });
+        });
+    }
   };
 
   //? هذه الدالة لحذف المنشورات
   async function handleDeletePost(recipeId) {
-    const response = await fetch('/api/allCookingRecipes', {
+    const email = session?.data?.user?.email;
+    const response = await fetch(`/api/allCookingRecipes`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: recipeId, email: session?.data?.user?.email }),
+      body: JSON.stringify({ id: recipeId, email: email }),
     });
 
     if (response.ok) {
@@ -172,15 +180,15 @@ export default function MyRecipes() {
               </div>
             ))}
         </div>
-        <div className="flex items-center justify-around text-white">
-          {myRecipes?.length >= 10 && (
+        <div className="flex items-center justify-around text-white mt-4">
+          {myRecipes?.length >= 5 && (
             <Link href={'#post1'}>
               <div
                 className="flex items-center justify-around cursor-pointer"
                 onClick={() => setPageNumber(pageNumber + 1)}
               >
                 <h1 className="text-white font-bold">الصفحة التالية</h1>
-                <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse" />
+                <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse text-green-500 select-none" />
               </div>
             </Link>
           )}
@@ -190,7 +198,7 @@ export default function MyRecipes() {
                 className="flex items-center justify-around cursor-pointer"
                 onClick={() => setPageNumber(pageNumber - 1)}
               >
-                <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse" />
+                <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse text-green-500 select-none" />
                 <h1 className="text-white font-bold">الصفحة السابقة</h1>
               </div>
             </Link>

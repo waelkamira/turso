@@ -6,7 +6,7 @@ export async function GET(req) {
     const url = new URL(req.url);
     const searchParams = url.searchParams;
     const page = parseInt(searchParams.get('page')) || 1;
-    const limit = parseInt(searchParams.get('limit')) || 10;
+    const limit = parseInt(searchParams.get('limit')) || 5;
     const selectedValue = searchParams.get('selectedValue');
     const id = searchParams.get('id'); // Keep as string
     const skip = (page - 1) * limit;
@@ -104,11 +104,11 @@ export async function DELETE(req) {
   console.log(email);
   console.log(typeof id);
 
-  // تحقق إذا كانت الوجبة موجودة وأن المستخدم صاحب الـ email قد أنشأها
-  const mealExists = await prisma.meal.findFirst({
-    where: { id: id, createdBy: email }, // استخدم id كنص و userEmail للتحقق
+  // تحقق إذا كانت الوجبة موجودة وأن المستخدم صاحب الوجبة
+  const mealExists = await prisma.meal?.findMany({
+    where: { id: id, createdBy: email }, // استخدم id كنص
   });
-  // console.log('mealExists', mealExists);
+  console.log('mealExists', mealExists);
 
   if (!mealExists) {
     return new Response(
