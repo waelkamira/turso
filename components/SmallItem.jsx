@@ -44,7 +44,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
 
   async function checkRecipeActionsStatus(recipe) {
     try {
-      const response = await fetch(`/api/actions/hearts?mealId=${recipe?.id}`);
+      const response = await fetch(`/api/actions?mealId=${recipe?.id}`);
       const json = await response?.json();
       if (response.ok) {
         console.log('json', json);
@@ -87,7 +87,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
   ) {
     setState(!action);
     try {
-      const response = await fetch(`/api/actions/hearts`, {
+      const response = await fetch(`/api/actions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

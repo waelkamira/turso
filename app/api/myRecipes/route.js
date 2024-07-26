@@ -5,7 +5,7 @@ import { authOptions } from '../authOptions/route';
 export async function GET(req) {
   try {
     // Parse query parameters for pagination and filtering
-    const url = new URL(req.url, `http://${req.headers.host}`);
+    const url = new URL(req.url);
     const searchParams = url.searchParams;
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
@@ -29,15 +29,9 @@ export async function GET(req) {
       take: limit,
     });
 
-    return new Response(JSON.stringify(allCookingRecipes), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 200,
-    });
+    return new Response(JSON.stringify(allCookingRecipes));
   } catch (error) {
     console.error('Error fetching recipes:', error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }));
   }
 }

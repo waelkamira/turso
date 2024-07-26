@@ -1,12 +1,11 @@
-import prisma from '../../../../lib/PrismaClient';
-import prisma2 from '../../../../lib/PrismaClient2';
+import prisma from '../../../lib/PrismaClient';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../authOptions/route';
+import { authOptions } from '../authOptions/route';
 
 // معالج طلب GET
 export async function GET(req) {
   try {
-    const url = new URL(req.url, `http://${req.headers.host}`);
+    const url = new URL(req.url);
     const searchParams = url.searchParams;
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
@@ -24,29 +23,17 @@ export async function GET(req) {
       query.mealId = mealId;
     }
 
-    // Fetch action records from both databases
-    const actionRecords1 = await prisma.action.findMany({
+    // Fetch action records from the database
+    const actionRecords = await prisma.action.findMany({
       where: query,
       skip,
       take: limit,
     });
 
-    const actionRecords2 = await prisma2.action.findMany({
-      where: query,
-      skip,
-      take: limit,
-    });
-
-    const combinedActionRecords = [...actionRecords1, ...actionRecords2];
-
-    return new Response(JSON.stringify(combinedActionRecords), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 200,
-    });
+    return new Response(JSON.stringify(actionRecords));
   } catch (error) {
     console.error('Error fetching action records:', error);
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      headers: { 'Content-Type': 'application/json' },
       status: 500,
     });
   }
@@ -59,7 +46,6 @@ export async function POST(req) {
 
   if (!email) {
     return new Response(JSON.stringify({ error: 'User not authenticated' }), {
-      headers: { 'Content-Type': 'application/json' },
       status: 401,
     });
   }
@@ -71,22 +57,13 @@ export async function POST(req) {
 
     if (!['likes', 'hearts', 'emojis'].includes(actionType)) {
       return new Response(JSON.stringify({ error: 'Invalid action type' }), {
-        headers: { 'Content-Type': 'application/json' },
         status: 400,
       });
     }
 
-    const meal1 = await prisma.meal.findUnique({ where: { id: mealId } });
-    const meal2 = await prisma2.meal.findUnique({ where: { id: mealId } });
+    const meal = await prisma.meal.findUnique({ where: { id: mealId } });
 
-    const existingAction1 = await prisma.action.findFirst({
-      where: {
-        userEmail: email,
-        mealId: mealId,
-      },
-    });
-
-    const existingAction2 = await prisma2.action.findFirst({
+    const existingAction = await prisma.action.findFirst({
       where: {
         userEmail: email,
         mealId: mealId,
@@ -94,29 +71,16 @@ export async function POST(req) {
     });
 
     let newActionValue;
-    if (existingAction1) {
-      newActionValue = existingAction1[actionType] === 1 ? 0 : 1;
+    if (existingAction) {
+      newActionValue = existingAction[actionType] === 1 ? 0 : 1;
 
       if (newActionValue === 0) {
         await prisma.action.delete({
-          where: { id: existingAction1.id },
+          where: { id: existingAction.id },
         });
       } else {
         await prisma.action.update({
-          where: { id: existingAction1.id },
-          data: { [actionType]: newActionValue },
-        });
-      }
-    } else if (existingAction2) {
-      newActionValue = existingAction2[actionType] === 1 ? 0 : 1;
-
-      if (newActionValue === 0) {
-        await prisma2.action.delete({
-          where: { id: existingAction2.id },
-        });
-      } else {
-        await prisma2.action.update({
-          where: { id: existingAction2.id },
+          where: { id: existingAction.id },
           data: { [actionType]: newActionValue },
         });
       }
@@ -134,29 +98,17 @@ export async function POST(req) {
       await prisma.action.create({
         data: newActionData,
       });
-      await prisma2.action.create({
-        data: newActionData,
-      });
     }
 
     // تحديث عدد الـ hearts في الـ meal
     if (actionType === 'hearts') {
       const increment = newActionValue === 1 ? 1 : -1;
-      if (meal1) {
-        const newHeartsValue1 = meal1.hearts + increment;
+      if (meal) {
+        const newHeartsValue = meal.hearts + increment;
         await prisma.meal.update({
           where: { id: mealId },
           data: {
-            hearts: newHeartsValue1 >= 0 ? newHeartsValue1 : meal1.hearts,
-          },
-        });
-      }
-      if (meal2) {
-        const newHeartsValue2 = meal2.hearts + increment;
-        await prisma2.meal.update({
-          where: { id: mealId },
-          data: {
-            hearts: newHeartsValue2 >= 0 ? newHeartsValue2 : meal2.hearts,
+            hearts: newHeartsValue >= 0 ? newHeartsValue : meal.hearts,
           },
         });
       }
@@ -175,14 +127,10 @@ export async function POST(req) {
       message = newActionValue ? 'لذيذ' : 'ليس لذيذ';
     }
 
-    return new Response(JSON.stringify({ message, newActionValue }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 200,
-    });
+    return new Response(JSON.stringify({ message, newActionValue }));
   } catch (error) {
     console.error('Error updating action:', error);
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      headers: { 'Content-Type': 'application/json' },
       status: 500,
     });
   }
@@ -194,7 +142,7 @@ export async function POST(req) {
 
 // export async function GET(req) {
 //   try {
-//     const url = new URL(req.url, `http://${req.headers.host}`);
+//     const url = new URL(req.url);
 //     const searchParams = url.searchParams;
 //     const page = parseInt(searchParams.get('page')) || 1;
 //     const limit = parseInt(searchParams.get('limit')) || 10;
@@ -223,14 +171,12 @@ export async function POST(req) {
 //     });
 
 //     return new Response(JSON.stringify(heartRecords), {
-//       headers: { 'Content-Type': 'application/json' },
-//       status: 200,
+// //       status: 200,
 //     });
 //   } catch (error) {
 //     console.error('Error fetching heart records:', error);
 //     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-//       headers: { 'Content-Type': 'application/json' },
-//       status: 500,
+// //       status: 500,
 //     });
 //   }
 // }
@@ -240,8 +186,7 @@ export async function POST(req) {
 
 //   if (!email) {
 //     return new Response(JSON.stringify({ error: 'User not authenticated' }), {
-//       headers: { 'Content-Type': 'application/json' },
-//       status: 401,
+// //       status: 401,
 //     });
 //   }
 
@@ -305,8 +250,7 @@ export async function POST(req) {
 //   } catch (error) {
 //     console.error('حدث خطأ ما:', error);
 //     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-//       headers: { 'Content-Type': 'application/json' },
-//       status: 500,
+// //       status: 500,
 //     });
 //   }
 // }

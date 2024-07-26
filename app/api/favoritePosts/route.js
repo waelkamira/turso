@@ -4,7 +4,7 @@ import { authOptions } from '../authOptions/route';
 
 export async function GET(req) {
   try {
-    const { searchParams } = new URL(req.url, `http://${req.headers.host}`);
+    const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
     const session = await getServerSession(authOptions);
@@ -31,7 +31,6 @@ export async function GET(req) {
   } catch (error) {
     console.error('Error fetching favorite posts:', error);
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      headers: { 'Content-Type': 'application/json' },
       status: 500,
     });
   }
@@ -54,7 +53,6 @@ export async function POST(req) {
   } catch (error) {
     console.error('Error creating favorite post:', error);
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      headers: { 'Content-Type': 'application/json' },
       status: 500,
     });
   }
@@ -77,7 +75,6 @@ export async function DELETE(req) {
   } catch (error) {
     console.error('Error deleting favorite post:', error);
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      headers: { 'Content-Type': 'application/json' },
       status: 500,
     });
   }

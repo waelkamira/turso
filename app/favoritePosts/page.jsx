@@ -27,9 +27,7 @@ export default function Page() {
 
   const fetchUserFavorites = async () => {
     try {
-      const res = await fetch(
-        `/api/actions/hearts?page=${pageNumber}&limit=10`
-      );
+      const res = await fetch(`/api/actions?page=${pageNumber}&limit=10`);
       const data = await res.json();
       if (res.ok) {
         console.log('data', data);
@@ -62,7 +60,7 @@ export default function Page() {
   };
 
   async function handleDeletePost(recipe) {
-    const response = await fetch(`/api/actions/hearts`, {
+    const response = await fetch(`/api/actions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mealId: recipe?.id, actionType: 'hearts' }),

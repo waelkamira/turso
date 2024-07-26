@@ -50,23 +50,27 @@ export default function AllCookingRecipes() {
         ))
       )}
       <div className="flex items-center justify-around sm:my-4 sm:mt-8">
-        {allCookingRecipes.length >= 10 && (
-          <div
-            className="flex items-center justify-around cursor-pointer"
-            onClick={() => setPageNumber(pageNumber + 1)}
-          >
-            <h1 className="text-gray-600 font-bold">Next Page</h1>
-            <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse" />
-          </div>
+        {allCookingRecipes?.length >= 10 && (
+          <Link href={'#post1'}>
+            <div
+              className="flex items-center justify-around cursor-pointer"
+              onClick={() => setPageNumber(pageNumber + 1)}
+            >
+              <h1 className="text-gray-600 font-bold">الصفحة التالية</h1>
+              <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse text-green-500" />
+            </div>
+          </Link>
         )}
         {pageNumber > 1 && (
-          <div
-            className="flex items-center justify-around cursor-pointer"
-            onClick={() => setPageNumber(pageNumber - 1)}
-          >
-            <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse" />
-            <h1 className="text-gray-600 font-bold">Previous Page</h1>
-          </div>
+          <Link href={'#post1'}>
+            <div
+              className="flex items-center justify-around cursor-pointer"
+              onClick={() => setPageNumber(pageNumber - 1)}
+            >
+              <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse text-green-500" />
+              <h1 className="text-gray-600 font-bold">الصفحة السابقة</h1>
+            </div>
+          </Link>
         )}
       </div>
     </div>

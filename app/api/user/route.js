@@ -11,36 +11,31 @@ export async function PUT(req) {
       data: { image, name },
     });
 
-    return new Response(JSON.stringify(user), { status: 200 });
+    return new Response(JSON.stringify(user));
   } catch (error) {
     console.error('Error updating user:', error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-    });
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }));
   }
 }
-
+//! req  حاول ارسال الايميل مع ال   getServerSession تظهر مشكلة عند بناء التطبيق قد يكون سببها
+//FIXME
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
 
     if (!email) {
-      return new Response(JSON.stringify({ error: 'User not authenticated' }), {
-        status: 401,
-      });
+      return new Response(JSON.stringify({ error: 'User not authenticated' }));
     }
 
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
-    return new Response(JSON.stringify(user ? [user] : []), { status: 200 });
+    return new Response(JSON.stringify(user ? [user] : []));
   } catch (error) {
     console.error('Error fetching user:', error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-    });
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }));
   }
 }
 

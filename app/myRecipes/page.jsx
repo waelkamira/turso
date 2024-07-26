@@ -47,7 +47,7 @@ export default function MyRecipes() {
     const response = await fetch('/api/allCookingRecipes', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: recipeId }),
+      body: JSON.stringify({ id: recipeId, email: session?.data?.user?.email }),
     });
 
     if (response.ok) {
