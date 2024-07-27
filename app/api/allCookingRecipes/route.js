@@ -54,10 +54,15 @@ export async function PUT(req) {
   const id = searchParams.get('id');
   const { actionType, newActionValue, ...data } = await req.json();
 
-  console.log('id ***********************************', id);
-  console.log('data ***********************************', data);
+  console.log(
+    'data ***********************************',
+    actionType,
+    newActionValue,
+    id,
+    typeof id
+  );
   try {
-    // const meal = await prisma.meal?.findUnique({ where: { id } });
+    const meal = await prisma.meal.findUnique({ where: { id } });
     // console.log('meal ***********************************', meal);
 
     if (actionType && newActionValue) {
@@ -76,7 +81,7 @@ export async function PUT(req) {
         updateData = { emojis: getUpdatedValue(meal?.emojis, newActionValue) };
       }
 
-      await prisma.meal?.update({
+      await prisma.meal.update({
         where: { id },
         data: updateData,
       });
@@ -86,7 +91,7 @@ export async function PUT(req) {
       );
     }
 
-    await prisma.meal?.update({
+    await prisma.meal.update({
       where: { id },
       data: data,
     });
@@ -135,7 +140,7 @@ export async function DELETE(req) {
 
   // احذف الوجبة
   await prisma.meal?.delete({
-    where: { id: id }, // استخدم id كنص
+    where: { id }, // استخدم id كنص
   });
   return new Response(
     JSON.stringify({
