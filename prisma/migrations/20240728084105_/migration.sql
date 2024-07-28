@@ -25,7 +25,8 @@ CREATE TABLE "Action" (
     "mealId" TEXT NOT NULL,
     "hearts" INTEGER NOT NULL DEFAULT 0,
     "likes" INTEGER NOT NULL DEFAULT 0,
-    "emojis" INTEGER NOT NULL DEFAULT 0
+    "emojis" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -34,7 +35,7 @@ CREATE TABLE "User" (
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT,
-    "isAdmin" TEXT NOT NULL DEFAULT 'false',
+    "isAdmin" BOOLEAN NOT NULL DEFAULT false,
     "image" TEXT NOT NULL DEFAULT 'https://res.cloudinary.com/dh2xlutfu/image/upload/v1718369814/items/uefgzp5uba74cgiwnfdf.png',
     "googleId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

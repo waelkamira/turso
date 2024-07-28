@@ -26,6 +26,9 @@ export async function GET(req) {
     // Fetch action records from the database
     const actionRecords = await prisma.action.findMany({
       where: query,
+      orderBy: { createdAt: 'desc' },
+
+      //FIXME  حتى نستطيع ترتيب العناصر من الاحدث الى الاقجم عند الطلب createdAt يجب تعديل هذا الجدول ووضع عامود فيه باسم
       skip,
       take: limit,
     });

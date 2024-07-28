@@ -33,10 +33,12 @@ model Action {
   id        String   @id @default(uuid())
   userEmail String
   mealId    String
-  hearts    Int      @default(0) // يجب أن يكون من نوع Int وليس String
+  hearts    Int      @default(0)
   likes     Int      @default(0)
   emojis    Int      @default(0)
+  createdAt DateTime @default(now())
 }
+
 
 
 model User {
