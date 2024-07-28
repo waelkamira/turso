@@ -125,14 +125,14 @@ export default function Users() {
           )}
         </div>
         <div className="flex items-center justify-around my-4 mt-8 text-white">
-          {users.length >= 10 && (
+          {users.length >= 5 && (
             <Link href="#post1">
               <div
                 className="flex items-center justify-around cursor-pointer"
                 onClick={() => setPageNumber(pageNumber + 1)}
               >
                 <h1 className="text-white font-bold">الصفحة التالية</h1>
-                <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse" />
+                <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse text-green-500 select-none" />
               </div>
             </Link>
           )}
@@ -142,7 +142,7 @@ export default function Users() {
                 className="flex items-center justify-around cursor-pointer"
                 onClick={() => setPageNumber(pageNumber - 1)}
               >
-                <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse" />
+                <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse text-green-500 select-none" />
                 <h1 className="text-white font-bold">الصفحة السابقة</h1>
               </div>
             </Link>
