@@ -43,7 +43,8 @@ export default function MyRecipes() {
       await fetch(`/api/myRecipes?page=${pageNumber}&email=${email}&limit=5`)
         .then((res) => res?.json())
         .then((res) => {
-          setMyRecipes(res);
+          setMyRecipes(res?.recipes);
+          console.log(res?.recipes);
           dispatch({ type: 'MY_RECIPES', payload: res });
         });
     }
@@ -151,11 +152,11 @@ export default function MyRecipes() {
           {myRecipes?.length > 0 &&
             myRecipes.map((recipe, index) => (
               <div
-                className="relative flex flex-col items-start justify-start gap-0 bg-green-500 rounded-lg overflow-hidden"
+                className="relative flex flex-col items-start justify-start gap-0 bg-one rounded-lg overflow-hidden"
                 key={index}
               >
                 {session?.status === 'authenticated' && (
-                  <div className="flex justify-between items-center bg-green-500 w-full pt-4 px-4">
+                  <div className="flex justify-between items-center bg-one w-full pt-4 px-4">
                     <div
                       className="flex flex-col items-center justify-center cursor-pointer bg-four rounded-lg p-2 md:text-2xl text-white hover:bg-one"
                       onClick={() => router.push(`/editRecipe/${recipe?.id}`)}
@@ -188,7 +189,7 @@ export default function MyRecipes() {
                 onClick={() => setPageNumber(pageNumber + 1)}
               >
                 <h1 className="text-white font-bold">الصفحة التالية</h1>
-                <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse text-green-500 select-none" />
+                <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse text-one select-none" />
               </div>
             </Link>
           )}
@@ -198,7 +199,7 @@ export default function MyRecipes() {
                 className="flex items-center justify-around cursor-pointer"
                 onClick={() => setPageNumber(pageNumber - 1)}
               >
-                <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse text-green-500 select-none" />
+                <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse text-one select-none" />
                 <h1 className="text-white font-bold">الصفحة السابقة</h1>
               </div>
             </Link>

@@ -57,7 +57,7 @@ export default function AllCookingRecipes() {
               onClick={() => setPageNumber(pageNumber + 1)}
             >
               <h1 className="text-gray-600 font-bold">الصفحة التالية</h1>
-              <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse text-green-500" />
+              <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse text-one" />
             </div>
           </Link>
         )}
@@ -67,7 +67,7 @@ export default function AllCookingRecipes() {
               className="flex items-center justify-around cursor-pointer"
               onClick={() => setPageNumber(pageNumber - 1)}
             >
-              <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse text-green-500" />
+              <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse text-one" />
               <h1 className="text-gray-600 font-bold">الصفحة السابقة</h1>
             </div>
           </Link>

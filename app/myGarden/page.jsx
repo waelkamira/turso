@@ -1,70 +1,85 @@
 'use client';
-import BackButton from '../../components/BackButton';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import SideBarMenu from '../../components/SideBarMenu';
 import { TfiMenuAlt } from 'react-icons/tfi';
 import Loading from '../../components/Loading';
 import Button from '../../components/Button';
 import LoadingPhoto from '../../components/LoadingPhoto';
-import { MdKeyboardDoubleArrowRight } from 'react-icons/md';
-import { MdKeyboardDoubleArrowLeft } from 'react-icons/md';
+import {
+  MdKeyboardDoubleArrowRight,
+  MdKeyboardDoubleArrowLeft,
+} from 'react-icons/md';
 import Link from 'next/link';
+import BackButton from '../../components/BackButton';
+import SideBarMenu from '../../components/SideBarMenu';
 
 export default function TheGarden() {
   const [pageNumber, setPageNumber] = useState(1);
   const [isOpen, setIsOpen] = useState(false);
   const [icons, setIcons] = useState([]);
-  const [userRecipes, setUserRecipes] = useState([]);
+  const [userRecipesCount, setUserRecipesCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    fetchUserRecipes();
+    fetchUserRecipesAndIcons(pageNumber);
   }, [pageNumber]);
+  //? هذه الدالة لجلب عدد وصفات المستخدم والأيقونات
+  const fetchUserRecipesAndIcons = async () => {
+    if (typeof window !== 'undefined') {
+      setIsLoading(true);
+      const userData = JSON.parse(localStorage.getItem('CurrentUser'));
+      const email = userData?.email;
 
-  //? هذه الدالة لجلب كل وصفات المستخدم لحساب عددها و عرضع الجوائز بناء على العدد
-  const fetchUserRecipes = async () => {
-    const response = await fetch('/api/allCookingRecipes');
-    const json = await response.json();
-
-    if (response?.ok) {
-      if (typeof window !== 'undefined') {
-        const userData = JSON.parse(localStorage.getItem('CurrentUser'));
-        // console.log('userData', userData);
-
-        const email = userData?.email;
-        // console.log('email', email);
-        const findUserRecipes = json?.filter(
-          (item) => item?.createdBy === email
+      if (email) {
+        const response = await fetch(
+          `/api/userIcons?email=${email}&page=${pageNumber}`
         );
-        setUserRecipes(findUserRecipes);
+        const json = await response.json();
 
-        //? هذه الدالة لجلب كل الايقونات من الباك اند
-        const res = await fetch('/api/getIcons');
-        const data = await res.json();
-        if (res.ok) {
-          const startPage = (pageNumber - 1) * 12;
-          const endPage = startPage + 12;
-          setIcons(data?.slice(startPage, endPage));
+        if (response.ok) {
+          setUserRecipesCount(json.count);
+          setIcons(json.icons);
         }
       }
+      setIsLoading(false);
     }
   };
 
-  const numberOfSquares = 12 - userRecipes?.length;
-  // const numberOfCubs = 0;
-  const arr = [];
-  const result = () => {
-    for (let i = 0; i < numberOfSquares; i++) {
-      arr.push(
-        <div className="flex justify-center items-center bg-four m-1 rounded-lg">
-          <h1 className="text-5xl h-full w-full text-center p-2 sm:p-4">🥝</h1>
+  const renderIconsAndPlaceholders = () => {
+    const elements = [];
+    const iconsCount = Math.min(userRecipesCount, 9);
+
+    for (let i = 0; i < iconsCount; i++) {
+      elements.push(
+        <div
+          className="flex justify-center bg-four p-1 m-2 rounded-lg overflow-hidden"
+          key={i}
+        >
+          <div className="relative size-[62px] lg:size-[100px] transition-all duration-200 hover:scale-110">
+            <Image
+              src={icons[i]}
+              layout="fill"
+              objectFit="contain"
+              alt="icon"
+            />
+          </div>
         </div>
       );
     }
-    return arr;
-  };
 
-  // console.log('userRecipes', userRecipes);
+    for (let i = iconsCount; i < 9; i++) {
+      elements.push(
+        <div
+          className="flex justify-center items-center bg-four m-1 rounded-lg text-center"
+          key={i}
+        >
+          <h1 className="text-4xl h-full w-full text-center p-1 sm:p-4">🥝</h1>
+        </div>
+      );
+    }
+
+    return elements;
+  };
 
   return (
     <div className="relative w-full bg-four h-full p-4 lg:p-8 rounded-lg">
@@ -91,9 +106,9 @@ export default function TheGarden() {
         />
       </div>
       <div className="flex flex-col justify-start items-center w-full gap-4 my-8">
-        <h1 className="grow text-lg lg:text-2xl w-full text-white ">
+        <h1 className="grow text-lg lg:text-2xl w-full text-white">
           الجوائز التي ربحتها نتيجة نشر
-          <span className="text-one"> {userRecipes?.length}</span> وصفات
+          <span className="text-one"> {userRecipesCount}</span> وصفات
         </h1>
         <div className="w-full sm:w-1/3 gap-4 my-8">
           <Button title={'إنشاء وصفة جديدة'} style={' '} path="/newRecipe" />
@@ -110,62 +125,41 @@ export default function TheGarden() {
         </div>
       </div>
       <div className="flex justify-center items-center text-white w-full h-full ">
-        {icons?.length === 0 && (
+        {isLoading && <Loading myMessage={'جاري التحميل...'} />}
+        {!isLoading && icons.length === 0 && (
           <Loading
             myMessage={
               'لم تربح أي جائزة بعد لأنك لم تقم بنشر أي وصفة طبخ حتى الأن 😉'
             }
           />
         )}
-        {icons?.length > 0 && (
-          <div className="grid grid-cols-3 w-full sm:w-2/3 xl:w-1/3 h-full bg-one rounded-lg p-4">
-            {icons?.length > 0 &&
-              icons?.slice(0, userRecipes?.length)?.map((icon, index) => (
-                <div
-                  className="flex justify-center p-2 rounded-lg bg-four overflow-hidden m-1"
-                  key={index}
-                >
-                  <div
-                    className="relative size-[50px] sm:size-[70px] transition-all duration-300 hover:scale-112 cursor-pointer"
-                    key={index}
-                  >
-                    {!icon && <LoadingPhoto />}
-                    {icon && (
-                      <Image
-                        src={icon}
-                        layout="fill"
-                        objectFit="contain"
-                        alt="icon"
-                      />
-                    )}
-                  </div>
-                </div>
-              ))}
-            {result()}
+        {!isLoading && icons.length > 0 && (
+          <div className="grid grid-cols-3 w-full sm:w-2/3 xl:w-3/5 h-full bg-one rounded-lg p-4">
+            {renderIconsAndPlaceholders()}
           </div>
         )}
       </div>
-      <div className="flex items-center justify-around text-white">
-        {icons?.length >= 12 && (
+      <div className="flex items-center justify-around text-white text-center">
+        {userRecipesCount > pageNumber * 9 && (
           <Link href={'#post1'}>
             <div
-              className="flex items-center justify-around cursor-pointer"
+              className="flex items-center justify-center cursor-pointer"
               onClick={() => setPageNumber(pageNumber + 1)}
             >
               <h1 className="text-white text-sm sm:text-lg mt-2 sm:font-bold">
                 الصفحة التالية
               </h1>
-              <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse" />
+              <MdKeyboardDoubleArrowRight className="text-2xl animate-pulse text-one select-none text-center h-full" />
             </div>
           </Link>
         )}
         {pageNumber > 1 && (
           <Link href={'#post1'}>
             <div
-              className="flex items-center justify-around cursor-pointer"
+              className="flex items-center justify-center cursor-pointer"
               onClick={() => setPageNumber(pageNumber - 1)}
             >
-              <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse" />
+              <MdKeyboardDoubleArrowLeft className="text-2xl animate-pulse text-one select-none text-center h-full" />
               <h1 className="text-white text-sm sm:text-lg mt-2 sm:font-bold">
                 الصفحة السابقة
               </h1>

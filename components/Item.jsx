@@ -98,7 +98,7 @@ export default function Item({
             </h1>
           </div>
           <div className="flex justify-center w-full">
-            <div className="flex flex-col w-full 2xl:w-2/3 rounded-lg p-2 sm:p-8 mt-8 bg-white border-t-[20px] border-green-500">
+            <div className="flex flex-col w-full 2xl:w-2/3 rounded-lg p-2 sm:p-8 mt-8 bg-white border-t-[20px] border-one">
               <div className="flex justify-start items-center gap-2 w-full mb-4">
                 <div className="relative size-14 overflow-hidden rounded-full">
                   {!userImage && <LoadingPhoto />}

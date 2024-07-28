@@ -7,77 +7,100 @@ import Loading from './Loading';
 export default function TheGarden() {
   const { myRecipes } = useContext(inputsContext);
   const [icons, setIcons] = useState([]);
-  const [userRecipes, setUserRecipes] = useState([]);
+  const [userRecipesCount, setUserRecipesCount] = useState(0);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    fetchUserRecipes();
-  }, [myRecipes]);
+    fetchUserRecipesAndIcons();
+  }, [myRecipes, pageNumber]);
 
-  const fetchUserRecipes = async () => {
-    const response = await fetch('/api/allCookingRecipes');
-    const json = await response?.json();
+  //? هذه الدالة لجلب عدد وصفات المستخدم والأيقونات
+  const fetchUserRecipesAndIcons = async () => {
+    if (typeof window !== 'undefined') {
+      setIsLoading(true);
+      const userData = JSON.parse(localStorage.getItem('CurrentUser'));
+      const email = userData?.email;
 
-    if (response?.ok) {
-      if (typeof window !== 'undefined') {
-        const userData = JSON?.parse(localStorage.getItem('CurrentUser'));
-        const email = userData?.email;
-        const findUserRecipes = json?.filter(
-          (item) => item?.createdBy === email
+      if (email) {
+        const response = await fetch(
+          `/api/userIcons?email=${email}&page=${pageNumber}`
         );
-        setUserRecipes(findUserRecipes);
+        const json = await response.json();
 
-        //? هذه الدالة لجلب كل الايقونات من الباك اند
-        const res = await fetch('/api/getIcons');
-        const data = await res?.json();
-        if (res.ok) {
-          setIcons(data);
+        if (response.ok) {
+          setUserRecipesCount(json.count);
+          setIcons(json.icons);
         }
       }
+      setIsLoading(false);
     }
   };
 
-  const numberOfSquares = 9 - userRecipes?.length;
-  const arr = [];
-  const result = () => {
-    for (let i = 0; i < numberOfSquares; i++) {
-      arr.push(
-        <div className="flex justify-center items-center size-[71px] bg-four m-2 rounded-lg text-center ">
-          <h1 className="text-4xl">🍕</h1>
+  const renderIconsAndPlaceholders = () => {
+    const elements = [];
+    const iconsCount = Math.min(userRecipesCount, 9);
+
+    for (let i = 0; i < iconsCount; i++) {
+      elements.push(
+        <div className="bg-four p-1 m-2 rounded-lg overflow-hidden" key={i}>
+          <div className="relative size-[62px] transition-all duration-200 hover:scale-110">
+            <Image
+              src={icons[i]}
+              layout="fill"
+              objectFit="contain"
+              alt="icon"
+            />
+          </div>
         </div>
       );
     }
-    return arr;
+
+    for (let i = iconsCount; i < 9; i++) {
+      elements.push(
+        <div
+          className="flex justify-center items-center bg-four m-1 rounded-lg"
+          key={i}
+        >
+          <h1 className="text-4xl h-full w-full text-center p-1 sm:p-4">🥝</h1>
+        </div>
+      );
+    }
+
+    return elements;
   };
 
   return (
-    <div className=" text-white ">
-      {icons?.length === 0 && <Loading />}
-      {icons?.length > 0 && (
+    <div className="text-white">
+      {isLoading && <Loading />}
+      {!isLoading && icons.length === 0 && <Loading />}
+      {!isLoading && icons.length > 0 && (
         <div className="flex flex-wrap justify-center items-center bg-one rounded-lg size-[270px]">
-          {icons?.length > 0 &&
-            icons
-              ?.slice(0, userRecipes?.length <= 9 ? userRecipes?.length : 9)
-              ?.map((icon, index) => (
-                <div
-                  className="bg-four p-1 m-2 rounded-lg overflow-hidden"
-                  key={index}
-                >
-                  <div
-                    className="relative size-[62px] transition-all duration-200 hover:scale-110"
-                    key={index}
-                  >
-                    <Image
-                      src={icon}
-                      layout="fill"
-                      objectFit="contain"
-                      alt="icon"
-                    />
-                  </div>
-                </div>
-              ))}
-          {result()}
+          {renderIconsAndPlaceholders()}
         </div>
       )}
+      {/* <div className="flex items-center justify-around text-white mt-4">
+        {pageNumber > 1 && (
+          <button
+            className="flex items-center justify-around cursor-pointer"
+            onClick={() => setPageNumber(pageNumber - 1)}
+          >
+            <h1 className="text-white text-sm sm:text-lg mt-2 sm:font-bold">
+              الصفحة السابقة
+            </h1>
+          </button>
+        )}
+        {icons.length === 9 && (
+          <button
+            className="flex items-center justify-around cursor-pointer"
+            onClick={() => setPageNumber(pageNumber + 1)}
+          >
+            <h1 className="text-white text-sm sm:text-lg mt-2 sm:font-bold">
+              الصفحة التالية
+            </h1>
+          </button>
+        )}
+      </div> */}
     </div>
   );
 }

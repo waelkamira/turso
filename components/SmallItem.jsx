@@ -165,7 +165,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       <div
         key={index}
         id="post1"
-        className="flex flex-col justify-center items-center shadow-md w-full p-4 rounded-lg mb-4 bg-white border-t-[20px] border-green-500 transition-all duration-300"
+        className="flex flex-col justify-center items-center shadow-md w-full p-4 rounded-lg mb-4 bg-white border-t-[20px] border-one transition-all duration-300"
       >
         <div className="flex items-center justify-center w-full p-2">
           <Link
@@ -394,7 +394,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
               ));
             }
           }}
-          className="sm:text-2xl p-2 bg-green-500 text-white hover:scale-[102%] hover:text-white font-medium text-center select-none w-full rounded-full shadow-lg transition-all duration-300 "
+          className="sm:text-2xl p-2 bg-one text-white hover:scale-[102%] hover:text-white font-medium text-center select-none w-full rounded-full shadow-lg transition-all duration-300 "
         >
           عرض الوصفة
         </button>
