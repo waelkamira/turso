@@ -32,14 +32,14 @@ export default function SearchBar() {
     search();
   }, [searchedWord, searchedCategory, pageNumber]);
 
-  const normalizedSearchedWord = normalizeArabic(searchedWord);
-  const normalizedCategory = normalizeArabic(searchedCategory);
-
   const search = async () => {
     const queryParams = new URLSearchParams({
       page: pageNumber.toString(),
       limit: '10',
     });
+
+    const normalizedSearchedWord = normalizeArabic(searchedWord);
+    const normalizedCategory = normalizeArabic(searchedCategory);
 
     if (normalizedSearchedWord) {
       queryParams.append('mealName', normalizedSearchedWord);
@@ -52,17 +52,17 @@ export default function SearchBar() {
     const res = await fetch(`/api/search?${queryParams.toString()}`);
     const json = await res?.json();
 
-    if (!searchedCategory && !searchedWord) {
+    if (!normalizedSearchedWord && !normalizedCategory) {
       setIsVisible(false);
     }
 
-    if (searchedWord) {
+    if (normalizedSearchedWord) {
       setIsVisible(true);
       setSearchedValues(json);
       setSearchByCategory([]); // Clear category search results
     }
 
-    if (searchedCategory) {
+    if (normalizedCategory) {
       setIsVisible(true);
       setSearchByCategory(json);
       setSearchedValues([]); // Clear text search results

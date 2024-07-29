@@ -12,7 +12,8 @@ export default function Page() {
   }, []);
 
   async function fetchOneCookingRecipe() {
-    const response = await fetch(`/api/allCookingRecipes?id=${id}`);
+    console.log('id', id);
+    const response = await fetch(`/api/showMealById?id=${id}`);
     const json = await response?.json();
     if (response.ok) {
       // console.log('json', json);
