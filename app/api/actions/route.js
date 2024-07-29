@@ -59,6 +59,9 @@ export async function GET(req) {
 export async function POST(req) {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;
+  const data = await req.json();
+  const mealId = data.mealId;
+  const actionType = data.actionType;
 
   if (!email) {
     return new Response(JSON.stringify({ error: 'User not authenticated' }), {
@@ -67,10 +70,6 @@ export async function POST(req) {
   }
 
   try {
-    const data = await req.json();
-    const mealId = data.mealId;
-    const actionType = data.actionType;
-
     if (!['likes', 'hearts', 'emojis'].includes(actionType)) {
       return new Response(JSON.stringify({ error: 'Invalid action type' }), {
         status: 400,
