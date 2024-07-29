@@ -4,16 +4,18 @@ import prisma from '../../../lib/PrismaClient';
 import NodeCache from 'node-cache';
 import { authOptions } from '../authOptions/route';
 import { getServerSession } from 'next-auth';
+
 // إنشاء كائن للتخزين المؤقت
 const cache = new NodeCache({ stdTTL: 60 * 10 }); // التخزين لمدة 10 دقائق
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url, 'http://localhost');
-  // const email = searchParams.get('email') || '';
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;
   const page = parseInt(searchParams.get('page')) || 1;
+  const limit = parseInt(searchParams.get('limit')) || 5;
 
+  const skip = (page - 1) * limit;
   console.log('email', email, page);
   try {
     if (!email) {
@@ -25,6 +27,7 @@ export async function GET(req) {
 
     // التأكد من أن Prisma جاهزة
     await prisma.$connect();
+
     // إنشاء مفتاح للتخزين المؤقت
     const cacheKeyCount = `userRecipesCount_${email}`;
     const cacheKeyRecipes = `userRecipes_${email}_page_${page}`;
@@ -35,7 +38,7 @@ export async function GET(req) {
     let userRecipes = cache.get(cacheKeyRecipes);
 
     if (userRecipesCount === undefined) {
-      // Fetch the count of meals created by the user
+      // جلب عدد الوجبات التي أنشأها المستخدم
       userRecipesCount = await prisma.meal.count({
         where: { createdBy: email },
       });
@@ -45,12 +48,13 @@ export async function GET(req) {
       cache.set(cacheKeyCount, userRecipesCount);
     }
 
-    if (page === 1 && !userRecipes) {
-      // Fetch the first 5 meals created by the user
+    if (!userRecipes) {
+      // جلب الوجبات التي أنشأها المستخدم للصفحة المطلوبة
       userRecipes = await prisma.meal.findMany({
         where: { createdBy: email },
         orderBy: { createdAt: 'desc' },
-        take: 5,
+        skip: skip,
+        take: limit,
       });
       console.log('email', email, page);
 
@@ -60,7 +64,7 @@ export async function GET(req) {
 
     return NextResponse.json({
       count: userRecipesCount,
-      recipes: page === 1 ? userRecipes : [],
+      recipes: userRecipes,
     });
   } catch (error) {
     console.error('Error fetching user recipes data:', error);
@@ -70,6 +74,7 @@ export async function GET(req) {
     );
   }
 }
+
 export async function DELETE(req) {
   const url = new URL(req.url);
   const searchParams = url.searchParams;
@@ -79,50 +84,56 @@ export async function DELETE(req) {
   console.log(id);
   console.log(email);
   console.log(typeof id);
-  await prisma.$connect(); // التأكد من أن Prisma جاهزة
-  // تحقق إذا كانت الوجبة موجودة وأن المستخدم صاحب الوجبة
-  const mealExists = await prisma?.meal?.findMany({
-    where: { id, createdBy: email }, // استخدم id كنص
-  });
-  console.log('mealExists', mealExists);
 
-  if (!mealExists) {
-    return new Response(
-      JSON.stringify({
-        error:
-          'Meal not found or you do not have permission to delete this meal',
-      }),
-      {
-        status: 404,
-      }
+  if (!id || !email) {
+    return NextResponse.json(
+      { error: 'يجب توفير معرف الوجبة والبريد الإلكتروني' },
+      { status: 400 }
     );
   }
 
-  // تحقق واحذف القلوب المرتبطة (إذا وجدت)
-  const heartsExist = await actionPrisma.action?.findMany({
-    where: { mealId: id, userEmail: email }, // استخدم id كنص
-  });
+  try {
+    await prisma.$connect(); // التأكد من أن Prisma جاهزة
 
-  if (heartsExist?.length > 0) {
-    await actionPrisma.action?.deleteMany({
-      where: { mealId: id, userEmail: email }, // استخدم id كنص
+    // تحقق إذا كانت الوجبة موجودة وأن المستخدم صاحب الوجبة
+    const mealExists = await prisma.meal.findFirst({
+      where: { id, createdBy: email }, // استخدم id كنص
     });
+
+    console.log('mealExists', mealExists);
+
+    if (!mealExists) {
+      return NextResponse.json(
+        {
+          error: 'لم يتم العثور على الوجبة أو لا تملك صلاحية حذف هذه الوجبة',
+        },
+        { status: 404 }
+      );
+    }
+
+    // استخدام معاملة لحذف الوجبة والقلوب المرتبطة بها
+    await prisma.$transaction([
+      prisma.action.deleteMany({
+        where: { mealId: id, userEmail: email }, // استخدم id كنص
+      }),
+      prisma.meal.delete({
+        where: { id }, // استخدم id كنص
+      }),
+    ]);
+
+    // إزالة البيانات القديمة من التخزين المؤقت بعد الحذف
+    cache.flushAll();
+
+    return NextResponse.json({ message: 'تم الحذف بنجاح ✔' });
+  } catch (error) {
+    console.error('Error deleting meal:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
-
-  // احذف الوجبة
-  await prisma.meal?.delete({
-    where: { id }, // استخدم id كنص
-  });
-
-  // إزالة البيانات القديمة من التخزين المؤقت بعد الحذف
-  cache.flushAll();
-
-  return new Response(
-    JSON.stringify({
-      message: 'تم الحذف بنجاح ✔',
-    })
-  );
 }
+
 // import { NextResponse } from 'next/server';
 // import prisma from '../../../lib/PrismaClient';
 // import NodeCache from 'node-cache';

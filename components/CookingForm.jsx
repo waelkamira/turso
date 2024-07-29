@@ -82,7 +82,7 @@ export default function CookingForm({
       createdBy
     ) {
       try {
-        const response = await fetch('/api/createMeal', {
+        const response = await fetch('/api/allCookingRecipes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -20,6 +20,7 @@ export default function AllCookingRecipes() {
 
   useEffect(() => {
     fetchAllCookingRecipes();
+    console.log('rerendered');
   }, [newRecipe, deletedRecipe, pageNumber]);
 
   async function fetchAllCookingRecipes() {

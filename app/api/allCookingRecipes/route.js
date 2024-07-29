@@ -1,37 +1,11 @@
 import prisma from '../../../lib/PrismaClient';
-import NodeCache from 'node-cache';
 import actionPrisma from '../../../lib/ActionPrismaClient';
+import NodeCache from 'node-cache';
 
-// إنشاء كائن للتخزين المؤقت
 const cache = new NodeCache({ stdTTL: 60 * 10 }); // التخزين لمدة 10 دقائق
 
-// دالة لإنشاء مفتاح التخزين المؤقت بناءً على معرف الوجبة
-function createCacheKey(id, page, limit, query) {
-  return `meals_${id || JSON.stringify(query)}_${page}_${limit}`;
-}
-
-// دالة لتحديث التخزين المؤقت
-async function updateCache(id, page, limit, query) {
-  const cacheKey = createCacheKey(id, page, limit, query);
-  let meals;
-  if (id) {
-    meals = await prisma.meal.findUnique({
-      where: { id },
-    });
-  } else {
-    meals = await prisma.meal.findMany({
-      where: Object.keys(query).length ? query : undefined,
-      orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-  }
-
-  // Convert meals to an array if a single object is fetched
-  meals = Array.isArray(meals) ? meals : [meals].filter(Boolean);
-
-  // تخزين النتائج في التخزين المؤقت
-  cache.set(cacheKey, meals);
+function createCacheKey(params) {
+  return `meals_${JSON.stringify(params)}`;
 }
 
 export async function GET(req) {
@@ -45,25 +19,31 @@ export async function GET(req) {
     const id = searchParams.get('id'); // Keep as string
     const skip = (page - 1) * limit;
 
-    // التأكد من أن Prisma جاهزة
-    await prisma.$connect(); // التأكد من أن Prisma جاهزة
-    await actionPrisma.$connect();
-
     // Build the query object
     const query = {};
     if (selectedValue) {
       query.selectedValue = selectedValue;
     }
 
-    // إنشاء مفتاح للتخزين المؤقت
-    const cacheKey = createCacheKey(id, page, limit, query);
+    // إنشاء مفتاح التخزين المؤقت
+    const cacheKey = createCacheKey({ id, page, limit, query });
 
     // محاولة الحصول على البيانات من التخزين المؤقت
     let meals = cache.get(cacheKey);
     if (!meals) {
-      // Fetch the meal from the database
-      await updateCache(id, page, limit, query);
-      meals = cache.get(cacheKey);
+      // التأكد من أن Prisma جاهزة
+      await prisma.$connect();
+      await actionPrisma.$connect();
+
+      meals = await prisma.meal.findMany({
+        where: query,
+        orderBy: { createdAt: 'desc' },
+        skip: skip,
+        take: limit,
+      });
+
+      // تخزين البيانات في التخزين المؤقت
+      cache.set(cacheKey, meals);
     }
 
     return new Response(JSON.stringify(meals), {
@@ -79,27 +59,42 @@ export async function GET(req) {
   }
 }
 
+export async function POST(req) {
+  await prisma.$connect();
+
+  const data = await req.json();
+  console.log('data', data);
+
+  try {
+    const meal = await prisma.meal.create({
+      data: { ...data },
+    });
+
+    // تحديث التخزين المؤقت
+    cache.flushAll(); // مسح التخزين المؤقت لإعادة التحميل
+
+    return new Response(JSON.stringify(meal), { status: 201 });
+  } catch (error) {
+    console.error('Error creating meal:', error);
+    return new Response(JSON.stringify({ error: 'حدث خطأ ما' }), {
+      status: 500,
+    });
+  }
+}
+
 export async function PUT(req) {
   const url = new URL(req.url);
   const searchParams = url.searchParams;
   const id = searchParams.get('id');
   const { actionType, newActionValue, ...data } = await req.json();
-  await prisma.$connect(); // التأكد من أن Prisma جاهزة
+  await prisma.$connect();
   await actionPrisma.$connect();
-  console.log(
-    'data ***********************************',
-    actionType,
-    newActionValue,
-    id,
-    typeof id
-  );
 
   try {
     const meal = await prisma.meal.findUnique({ where: { id } });
 
     let updateData = {};
     if (actionType && newActionValue) {
-      // دالة مساعدة لحساب القيم المحدثة
       function getUpdatedValue(currentValue, actionValue) {
         const newValue = currentValue + (actionValue === 1 ? 1 : -1);
         return newValue >= 0 ? newValue : currentValue;
@@ -124,8 +119,8 @@ export async function PUT(req) {
       });
     }
 
-    // تحديث التخزين المؤقت بعد التحديث
-    await updateCache(id);
+    // تحديث التخزين المؤقت
+    cache.flushAll(); // مسح التخزين المؤقت لإعادة التحميل
 
     return new Response(
       JSON.stringify({ message: 'تم التعديل بنجاح', newActionValue }),
@@ -145,16 +140,11 @@ export async function DELETE(req) {
   const id = searchParams.get('id');
   const email = searchParams.get('email');
 
-  console.log(id);
-  console.log(email);
-  console.log(typeof id);
-  await prisma.$connect(); // التأكد من أن Prisma جاهزة
+  await prisma.$connect();
   await actionPrisma.$connect();
-  // تحقق إذا كانت الوجبة موجودة وأن المستخدم صاحب الوجبة
   const mealExists = await prisma.meal.findMany({
-    where: { id, createdBy: email }, // استخدم id كنص
+    where: { id, createdBy: email },
   });
-  console.log('mealExists', mealExists);
 
   if (!mealExists) {
     return new Response(
@@ -168,24 +158,22 @@ export async function DELETE(req) {
     );
   }
 
-  // تحقق واحذف القلوب المرتبطة (إذا وجدت)
   const heartsExist = await actionPrisma.action.findMany({
-    where: { mealId: id, userEmail: email }, // استخدم id كنص
+    where: { mealId: id, userEmail: email },
   });
 
   if (heartsExist?.length > 0) {
     await actionPrisma.action.deleteMany({
-      where: { mealId: id, userEmail: email }, // استخدم id كنص
+      where: { mealId: id, userEmail: email },
     });
   }
 
-  // احذف الوجبة
   await prisma.meal.delete({
-    where: { id }, // استخدم id كنص
+    where: { id },
   });
 
-  // تحديث التخزين المؤقت بعد الحذف
-  await updateCache(id);
+  // تحديث التخزين المؤقت
+  cache.flushAll(); // مسح التخزين المؤقت لإعادة التحميل
 
   return new Response(
     JSON.stringify({
