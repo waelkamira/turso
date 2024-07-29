@@ -1,4 +1,6 @@
+import actionPrisma from '../../../lib/ActionPrismaClient';
 import prisma from '../../../lib/PrismaClient';
+
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../authOptions/route';
 import NodeCache from 'node-cache';
@@ -33,7 +35,7 @@ export async function GET(req) {
     let actionRecords = cache.get(cacheKey);
     if (!actionRecords) {
       // Fetch action records from the database
-      actionRecords = await prisma.action.findMany({
+      actionRecords = await actionPrisma.action.findMany({
         where: query,
         orderBy: { createdAt: 'desc' },
         skip,
@@ -77,7 +79,7 @@ export async function POST(req) {
 
     const meal = await prisma.meal.findUnique({ where: { id: mealId } });
 
-    const existingAction = await prisma.action.findFirst({
+    const existingAction = await actionPrisma.action.findFirst({
       where: {
         userEmail: email,
         mealId: mealId,
@@ -89,11 +91,11 @@ export async function POST(req) {
       newActionValue = existingAction[actionType] === 1 ? 0 : 1;
 
       if (newActionValue === 0) {
-        await prisma.action.delete({
+        await actionPrisma.action.delete({
           where: { id: existingAction.id },
         });
       } else {
-        await prisma.action.update({
+        await actionPrisma.action.update({
           where: { id: existingAction.id },
           data: { [actionType]: newActionValue },
         });
@@ -109,7 +111,7 @@ export async function POST(req) {
       };
       newActionData[actionType] = newActionValue;
 
-      await prisma.action.create({
+      await actionPrisma.action.create({
         data: newActionData,
       });
     }
@@ -152,24 +154,26 @@ export async function POST(req) {
     });
   }
 }
-
 // import prisma from '../../../lib/PrismaClient';
 // import { getServerSession } from 'next-auth';
 // import { authOptions } from '../authOptions/route';
+// import NodeCache from 'node-cache';
+
+// // إنشاء كائن للتخزين المؤقت
+// const cache = new NodeCache({ stdTTL: 60 * 10 }); // التخزين لمدة 10 دقائق
 
 // // معالج طلب GET
 // export async function GET(req) {
+//   const url = new URL(req.url);
+//   const searchParams = url.searchParams;
+//   const page = parseInt(searchParams.get('page')) || 1;
+//   const limit = parseInt(searchParams.get('limit')) || 5;
+//   const mealId = searchParams.get('mealId') || '';
+//   const session = await getServerSession(authOptions);
+//   const email = session?.user?.email;
+//   const nonEmail = searchParams.get('nonEmail');
+//   const skip = (page - 1) * limit;
 //   try {
-//     const url = new URL(req.url);
-//     const searchParams = url.searchParams;
-//     const page = parseInt(searchParams.get('page')) || 1;
-//     const limit = parseInt(searchParams.get('limit')) || 5;
-//     const mealId = searchParams.get('mealId') || '';
-//     const session = await getServerSession(authOptions);
-//     const email = session?.user?.email;
-//     const nonEmail = searchParams.get('nonEmail');
-//     const skip = (page - 1) * limit;
-
 //     const query = {};
 //     if (email && !nonEmail) {
 //       query.userEmail = email;
@@ -178,15 +182,23 @@ export async function POST(req) {
 //       query.mealId = mealId;
 //     }
 
-//     // Fetch action records from the database
-//     const actionRecords = await prisma.action.findMany({
-//       where: query,
-//       orderBy: { createdAt: 'desc' },
+//     // إنشاء مفتاح للتخزين المؤقت
+//     const cacheKey = `actions_${JSON.stringify(query)}_${page}_${limit}`;
 
-//       //FIXME  حتى نستطيع ترتيب العناصر من الاحدث الى الاقجم عند الطلب createdAt يجب تعديل هذا الجدول ووضع عامود فيه باسم
-//       skip,
-//       take: limit,
-//     });
+//     // محاولة الحصول على البيانات من التخزين المؤقت
+//     let actionRecords = cache.get(cacheKey);
+//     if (!actionRecords) {
+//       // Fetch action records from the database
+//       actionRecords = await prisma.action.findMany({
+//         where: query,
+//         orderBy: { createdAt: 'desc' },
+//         skip,
+//         take: limit,
+//       });
+
+//       // تخزين النتائج في التخزين المؤقت
+//       cache.set(cacheKey, actionRecords);
+//     }
 
 //     return new Response(JSON.stringify(actionRecords));
 //   } catch (error) {
@@ -271,6 +283,9 @@ export async function POST(req) {
 //         });
 //       }
 //     }
+
+//     // إزالة البيانات القديمة من التخزين المؤقت بعد التحديث
+//     cache.flushAll();
 
 //     let message = 'Action updated successfully';
 //     if (actionType === 'likes') {

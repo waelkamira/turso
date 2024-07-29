@@ -31,7 +31,7 @@ function inputsReducer(currentState, action) {
         },
       };
     case 'IMAGE':
-      console.log('image', action.payload);
+      // console.log('image', action.payload);
       return {
         data: { ...currentState?.data, image: action.payload },
       };

@@ -37,7 +37,7 @@ export default function Profile() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('image', JSON.stringify(profile_image?.image));
       }
-      console.log('newUserName', newUserName);
+      // console.log('newUserName', newUserName);
       const response = await fetch('/api/user', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

@@ -16,14 +16,26 @@ export default function SideBar() {
   const session = useSession();
   const [newImage, setNewImage] = useState('');
   const user = CurrentUser();
+  const [userRecipeCount, setUserRecipeCount] = useState(0);
 
-  console.log('user', user);
+  // console.log('user', user);
   useEffect(() => {
+    getTheUserRecipeCount();
     if (typeof window !== 'undefined') {
       const ima = localStorage.getItem('image');
       setNewImage(ima);
     }
   }, []);
+
+  //? معرفة عدد الطبخات حتى يتم اظهار زر الجوائز اولا
+  async function getTheUserRecipeCount() {
+    const response = await fetch('/api/myRecipes');
+    const json = await response?.json();
+    console.log('json from sidebar', json);
+    if (response.ok) {
+      setUserRecipeCount(json?.count);
+    }
+  }
 
   return (
     <div className="hidden xl:block w-80 h-full border-l-[16px] border-one">
@@ -91,16 +103,20 @@ export default function SideBar() {
 
             <Button title={'طبخاتي'} style={' '} path="/myRecipes" />
             <Button title={'وصفات أعجبتني'} style={' '} path="/favoritePosts" />
-            <Button title={'الجوائز'} style={' '} path="/myGarden" />
+            {userRecipeCount > 0 && (
+              <Button title={'الجوائز'} style={' '} path="/myGarden" />
+            )}
 
             {session?.status === 'authenticated' && user?.isAdmin && (
               <Button title={'المستخدمين'} style={' '} path="/users" />
             )}
           </div>
+          {userRecipeCount > 0 && (
+            <div className="p-4 rounded-r-lg bg-four overflow-hidden my-4">
+              <TheGarden />
+            </div>
+          )}
 
-          <div className="p-4 rounded-r-lg bg-four overflow-hidden my-4">
-            <TheGarden />
-          </div>
           <div className="px-2 rounded-r-lg bg-four overflow-hidden my-4">
             <Categories />
           </div>

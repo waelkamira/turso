@@ -1,5 +1,6 @@
 import prisma from '../../../lib/PrismaClient';
 import NodeCache from 'node-cache';
+import actionPrisma from '../../../lib/ActionPrismaClient';
 
 // إنشاء كائن للتخزين المؤقت
 const cache = new NodeCache({ stdTTL: 60 * 10 }); // التخزين لمدة 10 دقائق
@@ -146,12 +147,12 @@ export async function DELETE(req) {
   }
 
   // تحقق واحذف القلوب المرتبطة (إذا وجدت)
-  const heartsExist = await prisma.action?.findMany({
+  const heartsExist = await actionPrisma.action?.findMany({
     where: { mealId: id, userEmail: email }, // استخدم id كنص
   });
 
   if (heartsExist?.length > 0) {
-    await prisma.action?.deleteMany({
+    await actionPrisma.action?.deleteMany({
       where: { mealId: id, userEmail: email }, // استخدم id كنص
     });
   }

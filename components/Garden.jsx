@@ -71,36 +71,18 @@ export default function TheGarden() {
   };
 
   return (
-    <div className="text-white">
-      {isLoading && <Loading />}
-      {!isLoading && icons.length === 0 && <Loading />}
-      {!isLoading && icons.length > 0 && (
-        <div className="flex flex-wrap justify-center items-center bg-one rounded-lg size-[270px]">
-          {renderIconsAndPlaceholders()}
+    <>
+      {userRecipesCount > 0 && (
+        <div className="text-white">
+          {isLoading && <Loading />}
+          {!isLoading && icons.length === 0 && <Loading />}
+          {!isLoading && icons.length > 0 && (
+            <div className="flex flex-wrap justify-center items-center bg-one rounded-lg size-[270px]">
+              {renderIconsAndPlaceholders()}
+            </div>
+          )}
         </div>
       )}
-      {/* <div className="flex items-center justify-around text-white mt-4">
-        {pageNumber > 1 && (
-          <button
-            className="flex items-center justify-around cursor-pointer"
-            onClick={() => setPageNumber(pageNumber - 1)}
-          >
-            <h1 className="text-white text-sm sm:text-lg mt-2 sm:font-bold">
-              الصفحة السابقة
-            </h1>
-          </button>
-        )}
-        {icons.length === 9 && (
-          <button
-            className="flex items-center justify-around cursor-pointer"
-            onClick={() => setPageNumber(pageNumber + 1)}
-          >
-            <h1 className="text-white text-sm sm:text-lg mt-2 sm:font-bold">
-              الصفحة التالية
-            </h1>
-          </button>
-        )}
-      </div> */}
-    </div>
+    </>
   );
 }

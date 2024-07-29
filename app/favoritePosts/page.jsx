@@ -30,17 +30,17 @@ export default function Page() {
       const res = await fetch(`/api/actions?page=${pageNumber}&limit=5`);
       const data = await res.json();
       if (res.ok) {
-        console.log('data', data);
+        // console.log('data', data);
 
         // Collect the promises from the fetch operations
         const promises = data.map(async (item) => {
-          console.log('item', item);
+          // console.log('item', item);
           const response = await fetch(
             `/api/allCookingRecipes?id=${item?.mealId}`
           );
           if (response.ok) {
             const json = await response.json();
-            console.log('json', json);
+            // console.log('json', json);
             return json[0];
           } else {
             throw new Error('Failed to fetch cooking recipe');
@@ -49,7 +49,7 @@ export default function Page() {
 
         // Wait for all promises to resolve
         const arr = await Promise.all(promises);
-        console.log('arr', arr);
+        // console.log('arr', arr);
 
         // Set the user favorites
         setUserFavorites(arr);

@@ -70,7 +70,7 @@ export default function EditRecipe() {
   };
 
   async function handleEditRecipe() {
-    console.log('success');
+    // console.log('success');
     const response = await fetch(`/api/allCookingRecipes?id=${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

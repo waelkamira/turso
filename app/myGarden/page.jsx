@@ -52,7 +52,7 @@ export default function TheGarden() {
     for (let i = 0; i < iconsCount; i++) {
       elements.push(
         <div
-          className="flex justify-center bg-four p-1 m-2 rounded-lg overflow-hidden"
+          className="flex justify-center items-center bg-four p-1 m-2 rounded-lg overflow-hidden"
           key={i}
         >
           <div className="relative size-[62px] lg:size-[100px] transition-all duration-200 hover:scale-110">
@@ -70,10 +70,12 @@ export default function TheGarden() {
     for (let i = iconsCount; i < 9; i++) {
       elements.push(
         <div
-          className="flex justify-center items-center bg-four m-1 rounded-lg text-center"
+          className="flex justify-center bg-four p-1 m-2 rounded-lg overflow-hidden"
           key={i}
         >
-          <h1 className="text-4xl h-full w-full text-center p-1 sm:p-4">🥝</h1>
+          <h1 className="text-3xl lg:text-5xl  h-full w-full text-center p-3 sm:p-8 transition-all duration-200 hover:scale-110">
+            🥝
+          </h1>
         </div>
       );
     }

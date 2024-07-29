@@ -47,7 +47,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       const response = await fetch(`/api/actions?mealId=${recipe?.id}`);
       const json = await response?.json();
       if (response.ok) {
-        console.log('json', json);
+        // console.log('json', json);
         setLike(json[0]?.likes === 1);
         setHeart(json[0]?.hearts === 1);
         setEmoji(json[0]?.emojis === 1);

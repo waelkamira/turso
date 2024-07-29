@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../lib/PrismaClient';
 import NodeCache from 'node-cache';
 import { authOptions } from '../authOptions/route';
-import inputsContext from '../../../components/Context';
 import { getServerSession } from 'next-auth';
 // إنشاء كائن للتخزين المؤقت
 const cache = new NodeCache({ stdTTL: 60 * 10 }); // التخزين لمدة 10 دقائق

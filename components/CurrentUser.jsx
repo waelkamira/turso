@@ -16,10 +16,10 @@ export default function CurrentUser() {
   async function getUserData() {
     if (session) {
       const email = session?.user?.email;
-      console.log('email', email);
+      // console.log('email', email);
       const response = await fetch(`/api/user?email=${email}`);
       const json = await response?.json();
-      console.log('json', json);
+      // console.log('json', json);
       if (response.ok) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('CurrentUser', JSON.stringify(json));
