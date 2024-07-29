@@ -8,6 +8,15 @@ function createCacheKey(params) {
   return `meals_${JSON.stringify(params)}`;
 }
 
+function invalidateCacheByPrefix(prefix) {
+  const keys = cache.keys();
+  keys.forEach((key) => {
+    if (key.startsWith(prefix)) {
+      cache.del(key);
+    }
+  });
+}
+
 export async function GET(req) {
   try {
     // Parse query parameters for pagination and filtering
@@ -71,7 +80,7 @@ export async function POST(req) {
     });
 
     // تحديث التخزين المؤقت
-    cache.flushAll(); // مسح التخزين المؤقت لإعادة التحميل
+    invalidateCacheByPrefix('meals_'); // إزالة المفاتيح المتعلقة بالوجبات
 
     return new Response(JSON.stringify(meal), { status: 201 });
   } catch (error) {
@@ -120,7 +129,7 @@ export async function PUT(req) {
     }
 
     // تحديث التخزين المؤقت
-    cache.flushAll(); // مسح التخزين المؤقت لإعادة التحميل
+    invalidateCacheByPrefix('meals_'); // إزالة المفاتيح المتعلقة بالوجبات
 
     return new Response(
       JSON.stringify({ message: 'تم التعديل بنجاح', newActionValue }),
@@ -173,7 +182,7 @@ export async function DELETE(req) {
   });
 
   // تحديث التخزين المؤقت
-  cache.flushAll(); // مسح التخزين المؤقت لإعادة التحميل
+  invalidateCacheByPrefix('meals_'); // إزالة المفاتيح المتعلقة بالوجبات
 
   return new Response(
     JSON.stringify({
