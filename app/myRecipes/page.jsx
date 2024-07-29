@@ -25,6 +25,7 @@ export default function MyRecipes() {
   const { dispatch } = useContext(inputsContext);
   const [pageNumber, setPageNumber] = useState(1);
   const [currentUser, setCurrentUser] = useState('');
+  const [userRecipesCount, setUserRecipesCount] = useState(0);
   const session = useSession();
   const [myRecipes, setMyRecipes] = useState([]);
   const router = useRouter();
@@ -41,6 +42,7 @@ export default function MyRecipes() {
       .then((res) => res?.json())
       .then((res) => {
         setMyRecipes(res?.recipes);
+        setUserRecipesCount(res?.count);
         // console.log(res?.recipes);
         dispatch({ type: 'MY_RECIPES', payload: res });
       });
@@ -137,7 +139,7 @@ export default function MyRecipes() {
         <BackButton />
         <h1 className="grow text-lg lg:text-2xl w-full text-white">
           <span className="text-one font-bold text-2xl ml-2">#</span>
-          وصفاتي{' '}
+          وصفاتي <span className="text-one"> {userRecipesCount}</span>
         </h1>
       </div>
       <div className="my-8">
