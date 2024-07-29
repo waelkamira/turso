@@ -42,17 +42,19 @@ export default function EditRecipe() {
     });
     fetchEditedRecipe();
   }, []);
+  let iframeSrc = null;
 
-  //? src نريد ان نستخرج منه قيمة ال string لكنه نص  ifram html الذي هو عبارة عن عنصر  link انشأنا ديف مؤقت لوضع ال
-  let tempDiv = document?.createElement('div');
-  tempDiv.innerHTML = editedRecipe?.link;
+  if (typeof document !== 'undefined') {
+    //? src نريد ان نستخرج منه قيمة ال string لكنه نص  ifram html الذي هو عبارة عن عنصر  link انشأنا ديف مؤقت لوضع ال
+    let tempDiv = document?.createElement('div');
+    tempDiv.innerHTML = editedRecipe?.link;
 
-  //? داخل هذا الديف iframe بحثنا عن اول
-  let iframeElement = tempDiv.querySelector('iframe');
+    //? داخل هذا الديف iframe بحثنا عن اول
+    let iframeElement = tempDiv.querySelector('iframe');
 
-  //? موجود ifram اذا كان عنصر ال src استخرجنا قيمة ال
-  let iframeSrc = iframeElement ? iframeElement.getAttribute('src') : null;
-
+    //? موجود ifram اذا كان عنصر ال src استخرجنا قيمة ال
+    let iframeSrc = iframeElement ? iframeElement.getAttribute('src') : null;
+  }
   //? هذه الدالة للتأكد إذا كان التاريخ المدخل صحيحا أو لا
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -62,16 +64,17 @@ export default function EditRecipe() {
   };
 
   const fetchEditedRecipe = async () => {
-    const res = await fetch(`/api/allCookingRecipes?id=${id}`);
+    const res = await fetch(`/api/editRecipe?id=${id}`);
     const json = await res?.json();
     if (res.ok) {
-      setEditedRecipe(json[0]);
+      console.log('json', json);
+      setEditedRecipe(json);
     }
   };
 
   async function handleEditRecipe() {
     // console.log('success');
-    const response = await fetch(`/api/allCookingRecipes?id=${id}`, {
+    const response = await fetch(`/api/editRecipe?id=${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

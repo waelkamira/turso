@@ -40,7 +40,7 @@ export default function AllCookingRecipes() {
   }
 
   return (
-    <div className="flex flex-col w-full xl:w-[90%] 2xl:w-[70%] h-[1800px] sm:px-16 pt-4 sm:py-8 rounded-lg bg-seven overflow-y-auto z-10">
+    <div className="flex flex-col w-full xl:w-[90%] 2xl:w-[70%] h-[1370px] sm:px-16 pt-4 sm:py-8 rounded-lg bg-seven overflow-y-auto z-10">
       {allCookingRecipes.length === 0 ? (
         <Loading />
       ) : (

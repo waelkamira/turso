@@ -36,18 +36,16 @@ export default function Page() {
         );
         const data = await res.json();
         if (res.ok) {
-          // console.log('data', data);
+          console.log('data', data);
 
           // Collect the promises from the fetch operations
           const promises = data.map(async (item) => {
             // console.log('item', item);
-            const response = await fetch(
-              `/api/allCookingRecipes?id=${item?.mealId}`
-            );
+            const response = await fetch(`/api/editRecipe?id=${item?.mealId}`);
             if (response.ok) {
               const json = await response.json();
-              // console.log('json', json);
-              return json[0];
+              console.log('json', json);
+              return json;
             } else {
               throw new Error('Failed to fetch cooking recipe');
             }
@@ -163,7 +161,7 @@ export default function Page() {
             ))}
         </div>
         <div className="flex items-center justify-around my-4 mt-8 text-white">
-          {userFavorites?.length >= 10 && (
+          {userFavorites?.length >= 5 && (
             <Link href={'#post1'}>
               <div
                 className="flex items-center justify-around cursor-pointer"
