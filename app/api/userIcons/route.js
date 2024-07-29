@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/PrismaClient';
 import { v2 as cloudinary } from 'cloudinary';
-import NodeCache from 'node-cache';
+import Redis from 'ioredis';
 
-// إنشاء كائن للتخزين المؤقت
-const cache = new NodeCache({ stdTTL: 60 * 10 }); // التخزين لمدة 10 دقائق
+const redis = new Redis(process.env.REDIS_URL, {
+  tls: {
+    rejectUnauthorized: true,
+  },
+  retryStrategy: (times) => {
+    const delay = Math.min(1000 * 2 ** times, 60000); // Exponential backoff
+    return delay;
+  },
+});
+
+redis.on('error', (error) => {
+  console.error('Redis error:', error);
+  // Additional error handling can be added here if necessary
+});
 
 // Configure Cloudinary with your credentials
 cloudinary.config({
@@ -14,27 +26,29 @@ cloudinary.config({
 });
 
 export async function GET(req) {
-  await prisma.$connect(); // التأكد من أن Prisma جاهزة
+  await prisma.$connect(); // Ensure Prisma is ready
 
   const { searchParams } = new URL(req.url, 'http://localhost');
   const email = searchParams.get('email') || '';
   const page = parseInt(searchParams.get('page')) || 1;
-  const limit = 9; // عدد الأيقونات في كل صفحة
+  const limit = 9; // Number of icons per page
 
   try {
     if (!email) {
       return NextResponse.json(
-        { message: 'يجب توفير البريد الإلكتروني' },
+        { message: 'Email is required' },
         { status: 400 }
       );
     }
 
-    // إنشاء مفتاح للتخزين المؤقت
+    // Create a cache key
     const cacheKey = `userIcons_${email}_${page}`;
 
-    // محاولة الحصول على البيانات من التخزين المؤقت
-    let userIcons = cache.get(cacheKey);
-    if (!userIcons) {
+    // Attempt to retrieve data from cache
+    let userIcons = await redis.get(cacheKey);
+    if (userIcons) {
+      userIcons = JSON.parse(userIcons);
+    } else {
       // Fetch the count of meals created by the user
       const userRecipesCount = await prisma.meal.count({
         where: { createdBy: email },
@@ -64,21 +78,29 @@ export async function GET(req) {
       // Combine the count and icons
       userIcons = { count: userRecipesCount, icons };
 
-      // تخزين النتائج في التخزين المؤقت
-      cache.set(cacheKey, userIcons);
+      // Store the results in cache
+      await redis.set(cacheKey, JSON.stringify(userIcons), 'EX', 60 * 10); // Cache for 10 minutes
     }
 
     return NextResponse.json(userIcons);
   } catch (error) {
-    console.error('Error fetching user icons:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    if (error instanceof Redis.ConnectionError) {
+      console.error('Error connecting to Redis:', error);
+      return NextResponse.json(
+        { error: 'Unable to connect to cache. Please try again later.' },
+        { status: 500 }
+      );
+    } else {
+      console.error('Error fetching user icons:', error);
+      return NextResponse.json(
+        { error: 'Internal Server Error' },
+        { status: 500 }
+      );
+    }
   }
 }
 
-// دالة للحصول على الـ next_cursor للصفحة السابقة
+// Function to get the next_cursor for the previous page
 async function getPreviousPageCursor(page, limit) {
   let previousPageCursor = null;
   for (let i = 1; i < page; i++) {
