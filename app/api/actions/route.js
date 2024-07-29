@@ -8,17 +8,16 @@ const cache = new NodeCache({ stdTTL: 60 * 10 }); // التخزين لمدة 10 
 
 // معالج طلب GET
 export async function GET(req) {
+  const url = new URL(req.url);
+  const searchParams = url.searchParams;
+  const page = parseInt(searchParams.get('page')) || 1;
+  const limit = parseInt(searchParams.get('limit')) || 5;
+  const mealId = searchParams.get('mealId') || '';
+  const session = await getServerSession(authOptions);
+  const email = session?.user?.email;
+  const nonEmail = searchParams.get('nonEmail');
+  const skip = (page - 1) * limit;
   try {
-    const url = new URL(req.url);
-    const searchParams = url.searchParams;
-    const page = parseInt(searchParams.get('page')) || 1;
-    const limit = parseInt(searchParams.get('limit')) || 5;
-    const mealId = searchParams.get('mealId') || '';
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
-    const nonEmail = searchParams.get('nonEmail');
-    const skip = (page - 1) * limit;
-
     const query = {};
     if (email && !nonEmail) {
       query.userEmail = email;
