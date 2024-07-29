@@ -10,6 +10,30 @@ function createCacheKey(id, page, limit, query) {
   return `meals_${id || JSON.stringify(query)}_${page}_${limit}`;
 }
 
+// دالة لتحديث التخزين المؤقت
+async function updateCache(id, page, limit, query) {
+  const cacheKey = createCacheKey(id, page, limit, query);
+  let meals;
+  if (id) {
+    meals = await prisma.meal.findUnique({
+      where: { id },
+    });
+  } else {
+    meals = await prisma.meal.findMany({
+      where: Object.keys(query).length ? query : undefined,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+  }
+
+  // Convert meals to an array if a single object is fetched
+  meals = Array.isArray(meals) ? meals : [meals].filter(Boolean);
+
+  // تخزين النتائج في التخزين المؤقت
+  cache.set(cacheKey, meals);
+}
+
 export async function GET(req) {
   try {
     // Parse query parameters for pagination and filtering
@@ -38,24 +62,8 @@ export async function GET(req) {
     let meals = cache.get(cacheKey);
     if (!meals) {
       // Fetch the meal from the database
-      if (id) {
-        meals = await prisma.meal.findUnique({
-          where: { id },
-        });
-      } else {
-        meals = await prisma.meal.findMany({
-          where: Object.keys(query).length ? query : undefined,
-          orderBy: { createdAt: 'desc' },
-          skip,
-          take: limit,
-        });
-      }
-
-      // Convert meals to an array if a single object is fetched
-      meals = Array.isArray(meals) ? meals : [meals].filter(Boolean);
-
-      // تخزين النتائج في التخزين المؤقت
-      cache.set(cacheKey, meals);
+      await updateCache(id, page, limit, query);
+      meals = cache.get(cacheKey);
     }
 
     return new Response(JSON.stringify(meals), {
@@ -116,9 +124,8 @@ export async function PUT(req) {
       });
     }
 
-    // إزالة البيانات القديمة من التخزين المؤقت بعد التحديث
-    const cacheKey = createCacheKey(id);
-    cache.del(cacheKey);
+    // تحديث التخزين المؤقت بعد التحديث
+    await updateCache(id);
 
     return new Response(
       JSON.stringify({ message: 'تم التعديل بنجاح', newActionValue }),
@@ -177,9 +184,8 @@ export async function DELETE(req) {
     where: { id }, // استخدم id كنص
   });
 
-  // إزالة البيانات القديمة من التخزين المؤقت بعد الحذف
-  const cacheKey = createCacheKey(id);
-  cache.del(cacheKey);
+  // تحديث التخزين المؤقت بعد الحذف
+  await updateCache(id);
 
   return new Response(
     JSON.stringify({
