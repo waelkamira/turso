@@ -1,4 +1,4 @@
-import prisma from '../../../lib/PrismaClient';
+import userPrisma from '../../../lib/UserPrismaClient';
 import bcrypt from 'bcrypt';
 
 export async function POST(req) {
@@ -6,7 +6,7 @@ export async function POST(req) {
     const { name, email, password } = await req.json();
 
     // Check if the user already exists
-    const isExist = await prisma.user.findUnique({
+    const isExist = await userPrisma.user.findUnique({
       where: { email },
     });
 
@@ -20,7 +20,7 @@ export async function POST(req) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create a new user
-    const user = await prisma.user.create({
+    const user = await userPrisma.user.create({
       data: {
         name,
         email,
@@ -36,6 +36,44 @@ export async function POST(req) {
     });
   }
 }
+// import prisma from '../../../lib/PrismaClient';
+// import bcrypt from 'bcrypt';
+
+// export async function POST(req) {
+//   try {
+//     const { name, email, password } = await req.json();
+
+//     // Check if the user already exists
+//     const isExist = await prisma.user.findUnique({
+//       where: { email },
+//     });
+
+//     if (isExist) {
+//       throw new Error(
+//         'هذا الايميل موجود بالفعل قم بتسجيل الدخول او استخدم بريد الكتروني أخر'
+//       );
+//     }
+
+//     // Hash the password
+//     const hashedPassword = await bcrypt.hash(password, 10);
+
+//     // Create a new user
+//     const user = await prisma.user.create({
+//       data: {
+//         name,
+//         email,
+//         password: hashedPassword,
+//       },
+//     });
+
+//     return new Response(JSON.stringify(user), { status: 201 });
+//   } catch (error) {
+//     console.error('Error creating user:', error);
+//     return new Response(JSON.stringify({ error: error.message }), {
+//       status: 500,
+//     });
+//   }
+// }
 
 // // import { usersConnection } from '../../../lib/MongoDBConnections'; // Adjust the import path accordingly
 // const initializeConnections = require('../../../lib/MongoDBConnections');
