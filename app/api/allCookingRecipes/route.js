@@ -15,9 +15,11 @@ export async function GET(req) {
     const selectedValue = searchParams.get('selectedValue');
     const id = searchParams.get('id'); // Keep as string
     const skip = (page - 1) * limit;
+
     // التأكد من أن Prisma جاهزة
     await prisma.$connect(); // التأكد من أن Prisma جاهزة
     await actionPrisma.$connect();
+
     // Build the query object
     const query = {};
     if (selectedValue) {
@@ -32,11 +34,11 @@ export async function GET(req) {
     if (!meals) {
       // Fetch the meal from the database
       if (id) {
-        meals = await prisma.meal?.findUnique({
+        meals = await prisma.meal.findUnique({
           where: { id },
         });
       } else {
-        meals = await prisma.meal?.findMany({
+        meals = await prisma.meal.findMany({
           where: Object.keys(query).length ? query : undefined,
           orderBy: { createdAt: 'desc' },
           skip,
@@ -106,7 +108,8 @@ export async function PUT(req) {
       cache.flushAll();
 
       return new Response(
-        JSON.stringify({ message: 'تم التعديل بنجاح', newActionValue })
+        JSON.stringify({ message: 'تم التعديل بنجاح', newActionValue }),
+        { status: 200 }
       );
     }
 
@@ -118,10 +121,14 @@ export async function PUT(req) {
     // إزالة البيانات القديمة من التخزين المؤقت بعد التحديث
     cache.flushAll();
 
-    return new Response(JSON.stringify({ message: 'تم التعديل بنجاح' }));
+    return new Response(JSON.stringify({ message: 'تم التعديل بنجاح' }), {
+      status: 200,
+    });
   } catch (error) {
     console.error('Error updating meal:', error);
-    return new Response(JSON.stringify({ error: 'حدث خطأ ما' }));
+    return new Response(JSON.stringify({ error: 'حدث خطأ ما' }), {
+      status: 500,
+    });
   }
 }
 
@@ -137,7 +144,7 @@ export async function DELETE(req) {
   await prisma.$connect(); // التأكد من أن Prisma جاهزة
   await actionPrisma.$connect();
   // تحقق إذا كانت الوجبة موجودة وأن المستخدم صاحب الوجبة
-  const mealExists = await prisma?.meal?.findMany({
+  const mealExists = await prisma.meal.findMany({
     where: { id, createdBy: email }, // استخدم id كنص
   });
   console.log('mealExists', mealExists);
@@ -155,18 +162,18 @@ export async function DELETE(req) {
   }
 
   // تحقق واحذف القلوب المرتبطة (إذا وجدت)
-  const heartsExist = await actionPrisma.action?.findMany({
+  const heartsExist = await actionPrisma.action.findMany({
     where: { mealId: id, userEmail: email }, // استخدم id كنص
   });
 
   if (heartsExist?.length > 0) {
-    await actionPrisma.action?.deleteMany({
+    await actionPrisma.action.deleteMany({
       where: { mealId: id, userEmail: email }, // استخدم id كنص
     });
   }
 
   // احذف الوجبة
-  await prisma.meal?.delete({
+  await prisma.meal.delete({
     where: { id }, // استخدم id كنص
   });
 
@@ -176,7 +183,8 @@ export async function DELETE(req) {
   return new Response(
     JSON.stringify({
       message: 'تم الحذف بنجاح ✔',
-    })
+    }),
+    { status: 200 }
   );
 }
 
