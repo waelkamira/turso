@@ -15,7 +15,9 @@ export async function GET(req) {
     const selectedValue = searchParams.get('selectedValue');
     const id = searchParams.get('id'); // Keep as string
     const skip = (page - 1) * limit;
-
+    // التأكد من أن Prisma جاهزة
+    await prisma.$connect(); // التأكد من أن Prisma جاهزة
+    await actionPrisma.$connect();
     // Build the query object
     const query = {};
     if (selectedValue) {
@@ -67,7 +69,8 @@ export async function PUT(req) {
   const searchParams = url.searchParams;
   const id = searchParams.get('id');
   const { actionType, newActionValue, ...data } = await req.json();
-
+  await prisma.$connect(); // التأكد من أن Prisma جاهزة
+  await actionPrisma.$connect();
   console.log(
     'data ***********************************',
     actionType,
@@ -123,14 +126,19 @@ export async function PUT(req) {
 }
 
 export async function DELETE(req) {
-  const { id, email } = await req.json();
+  const url = new URL(req.url);
+  const searchParams = url.searchParams;
+  const id = searchParams.get('id');
+  const email = searchParams.get('email');
+
   console.log(id);
   console.log(email);
   console.log(typeof id);
-
+  await prisma.$connect(); // التأكد من أن Prisma جاهزة
+  await actionPrisma.$connect();
   // تحقق إذا كانت الوجبة موجودة وأن المستخدم صاحب الوجبة
-  const mealExists = await prisma.meal?.findMany({
-    where: { id: id, createdBy: email }, // استخدم id كنص
+  const mealExists = await prisma?.meal?.findMany({
+    where: { id, createdBy: email }, // استخدم id كنص
   });
   console.log('mealExists', mealExists);
 

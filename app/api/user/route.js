@@ -5,6 +5,8 @@ import userPrisma from '../../../lib/UserPrismaClient';
 const cache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 
 export async function GET(req) {
+  await userPrisma.$connect(); // التأكد من أن Prisma جاهزة
+
   const { searchParams } = new URL(req.url);
   const pageNumber = parseInt(searchParams.get('pageNumber') || '1', 10);
   const limit = parseInt(searchParams.get('limit') || '5', 10);
@@ -51,6 +53,8 @@ export async function GET(req) {
 }
 
 export async function PUT(req) {
+  await userPrisma.$connect(); // التأكد من أن Prisma جاهزة
+
   try {
     const { email, image, name } = await req.json();
 
@@ -76,6 +80,8 @@ export async function PUT(req) {
 }
 
 export async function DELETE(req) {
+  await userPrisma.$connect(); // التأكد من أن Prisma جاهزة
+
   try {
     const { email } = await req.json();
 

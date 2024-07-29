@@ -30,34 +30,33 @@ export default function MyRecipes() {
   const router = useRouter();
 
   useEffect(() => {
-    if (session) {
-      fetchMyRecipes();
-    }
+    fetchMyRecipes();
   }, [pageNumber, session]);
 
   const fetchMyRecipes = async () => {
-    if (session) {
-      const email = session?.data?.user?.email;
-      // console.log('email ******', email);
+    const email = session?.data?.user?.email;
+    // console.log('email ******', email);
 
-      await fetch(`/api/myRecipes?page=${pageNumber}&email=${email}&limit=5`)
-        .then((res) => res?.json())
-        .then((res) => {
-          setMyRecipes(res?.recipes);
-          // console.log(res?.recipes);
-          dispatch({ type: 'MY_RECIPES', payload: res });
-        });
-    }
+    await fetch(`/api/myRecipes?page=${pageNumber}&email=${email}&limit=5`)
+      .then((res) => res?.json())
+      .then((res) => {
+        setMyRecipes(res?.recipes);
+        // console.log(res?.recipes);
+        dispatch({ type: 'MY_RECIPES', payload: res });
+      });
   };
 
   //? هذه الدالة لحذف المنشورات
   async function handleDeletePost(recipeId) {
     const email = session?.data?.user?.email;
-    const response = await fetch(`/api/allCookingRecipes`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: recipeId, email: email }),
-    });
+    const response = await fetch(
+      `/api/myRecipes?email=${email}&id=${recipeId}`,
+      {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: recipeId, email: email }),
+      }
+    );
 
     if (response.ok) {
       toast.custom((t) => (
@@ -67,8 +66,8 @@ export default function MyRecipes() {
           redEmoji={'✖'}
         />
       ));
-      setIsVisible(false);
       fetchMyRecipes();
+      setIsVisible(false);
     } else {
       toast.custom((t) => <CustomToast t={t} message={'حدث خطأ ما 😐'} />);
       setIsVisible(false);

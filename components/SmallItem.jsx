@@ -87,7 +87,9 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
   ) {
     setState(!action);
     try {
-      const response = await fetch(`/api/actions`, {
+      const email = session?.data?.user?.email;
+      console.log(email);
+      const response = await fetch(`/api/actions?email=${email}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

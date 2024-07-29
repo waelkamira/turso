@@ -7,6 +7,8 @@ import NodeCache from 'node-cache';
 const cache = new NodeCache({ stdTTL: 60 * 10 }); // التخزين لمدة 10 دقائق
 
 export async function GET(req) {
+  await prisma.$connect(); // التأكد من أن Prisma جاهزة
+
   try {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page')) || 1;
@@ -51,6 +53,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
+  await prisma.$connect(); // التأكد من أن Prisma جاهزة
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;
 
@@ -76,6 +79,7 @@ export async function POST(req) {
 }
 
 export async function DELETE(req) {
+  await prisma.$connect(); // التأكد من أن Prisma جاهزة
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;
 

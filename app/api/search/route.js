@@ -1,6 +1,8 @@
 import prisma from '../../../lib/PrismaClient';
 
 export async function GET(req) {
+  await prisma.$connect(); // التأكد من أن Prisma جاهزة
+
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get('page') || '1', 10);
   const limit = parseInt(searchParams.get('limit') || '10', 10);

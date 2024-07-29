@@ -2,6 +2,8 @@ import userPrisma from '../../../lib/UserPrismaClient';
 import bcrypt from 'bcrypt';
 
 export async function POST(req) {
+  await userPrisma.$connect(); // التأكد من أن Prisma جاهزة
+
   try {
     const { name, email, password } = await req.json();
 

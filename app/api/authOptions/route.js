@@ -30,7 +30,7 @@ export const authOptions = {
       async authorize(credentials) {
         const email = credentials?.email;
         const password = credentials?.password;
-
+        await userPrisma.$connect(); // التأكد من أن Prisma جاهزة
         const user = await userPrisma.user.findUnique({
           where: { email },
         });
@@ -54,12 +54,15 @@ export const authOptions = {
       return session;
     },
     async signIn({ account, profile }) {
+      await userPrisma.$connect(); // التأكد من أن Prisma جاهزة
+
       if (account.provider === 'google') {
         const existingUser = await userPrisma.user.findUnique({
           where: { email: profile.email },
         });
 
         if (existingUser) {
+          await userPrisma.$connect(); // التأكد من أن Prisma جاهزة
           if (!existingUser.googleId) {
             await userPrisma.user.update({
               where: { email: profile.email },

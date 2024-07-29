@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import actionPrisma from '../../../lib/ActionPrismaClient';
 import prisma from '../../../lib/PrismaClient';
 import NodeCache from 'node-cache';
 import { authOptions } from '../authOptions/route';
@@ -22,6 +23,8 @@ export async function GET(req) {
       );
     }
 
+    // التأكد من أن Prisma جاهزة
+    await prisma.$connect();
     // إنشاء مفتاح للتخزين المؤقت
     const cacheKeyCount = `userRecipesCount_${email}`;
     const cacheKeyRecipes = `userRecipes_${email}_page_${page}`;
@@ -67,7 +70,59 @@ export async function GET(req) {
     );
   }
 }
+export async function DELETE(req) {
+  const url = new URL(req.url);
+  const searchParams = url.searchParams;
+  const id = searchParams.get('id');
+  const email = searchParams.get('email');
 
+  console.log(id);
+  console.log(email);
+  console.log(typeof id);
+  await prisma.$connect(); // التأكد من أن Prisma جاهزة
+  // تحقق إذا كانت الوجبة موجودة وأن المستخدم صاحب الوجبة
+  const mealExists = await prisma?.meal?.findMany({
+    where: { id, createdBy: email }, // استخدم id كنص
+  });
+  console.log('mealExists', mealExists);
+
+  if (!mealExists) {
+    return new Response(
+      JSON.stringify({
+        error:
+          'Meal not found or you do not have permission to delete this meal',
+      }),
+      {
+        status: 404,
+      }
+    );
+  }
+
+  // تحقق واحذف القلوب المرتبطة (إذا وجدت)
+  const heartsExist = await actionPrisma.action?.findMany({
+    where: { mealId: id, userEmail: email }, // استخدم id كنص
+  });
+
+  if (heartsExist?.length > 0) {
+    await actionPrisma.action?.deleteMany({
+      where: { mealId: id, userEmail: email }, // استخدم id كنص
+    });
+  }
+
+  // احذف الوجبة
+  await prisma.meal?.delete({
+    where: { id }, // استخدم id كنص
+  });
+
+  // إزالة البيانات القديمة من التخزين المؤقت بعد الحذف
+  cache.flushAll();
+
+  return new Response(
+    JSON.stringify({
+      message: 'تم الحذف بنجاح ✔',
+    })
+  );
+}
 // import { NextResponse } from 'next/server';
 // import prisma from '../../../lib/PrismaClient';
 // import NodeCache from 'node-cache';

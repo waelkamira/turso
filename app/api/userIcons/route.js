@@ -14,6 +14,8 @@ cloudinary.config({
 });
 
 export async function GET(req) {
+  await prisma.$connect(); // التأكد من أن Prisma جاهزة
+
   const { searchParams } = new URL(req.url, 'http://localhost');
   const email = searchParams.get('email') || '';
   const page = parseInt(searchParams.get('page')) || 1;

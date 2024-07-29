@@ -1,8 +1,6 @@
 import actionPrisma from '../../../lib/ActionPrismaClient';
 import prisma from '../../../lib/PrismaClient';
 
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../authOptions/route';
 import NodeCache from 'node-cache';
 
 // إنشاء كائن للتخزين المؤقت
@@ -15,10 +13,11 @@ export async function GET(req) {
   const page = parseInt(searchParams.get('page')) || 1;
   const limit = parseInt(searchParams.get('limit')) || 5;
   const mealId = searchParams.get('mealId') || '';
-  const session = await getServerSession(authOptions);
-  const email = session?.user?.email;
+
+  const email = searchParams.get('email') || '';
   const nonEmail = searchParams.get('nonEmail');
   const skip = (page - 1) * limit;
+  await actionPrisma.$connect();
   try {
     const query = {};
     if (email && !nonEmail) {
@@ -57,12 +56,14 @@ export async function GET(req) {
 
 // معالج طلب POST
 export async function POST(req) {
-  const session = await getServerSession(authOptions);
-  const email = session?.user?.email;
+  const url = new URL(req.url);
+  const searchParams = url.searchParams;
+  const email = searchParams.get('email') || '';
   const data = await req.json();
   const mealId = data.mealId;
   const actionType = data.actionType;
-
+  console.log('email **************', email, actionType, mealId);
+  await actionPrisma.$connect();
   if (!email) {
     return new Response(JSON.stringify({ error: 'User not authenticated' }), {
       status: 401,
@@ -77,6 +78,7 @@ export async function POST(req) {
     }
 
     const meal = await prisma.meal.findUnique({ where: { id: mealId } });
+    console.log('meal **************', meal, actionType, mealId, email);
 
     const existingAction = await actionPrisma.action.findFirst({
       where: {

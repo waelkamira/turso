@@ -1,6 +1,8 @@
 import prisma from '../../../lib/PrismaClient';
 
 export async function POST(req) {
+  await prisma.$connect(); // التأكد من أن Prisma جاهزة
+
   const data = await req.json();
   console.log('data', data);
 
