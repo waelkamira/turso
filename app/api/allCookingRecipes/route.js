@@ -5,6 +5,11 @@ import actionPrisma from '../../../lib/ActionPrismaClient';
 // إنشاء كائن للتخزين المؤقت
 const cache = new NodeCache({ stdTTL: 60 * 10 }); // التخزين لمدة 10 دقائق
 
+// دالة لإنشاء مفتاح التخزين المؤقت بناءً على معرف الوجبة
+function createCacheKey(id, page, limit, query) {
+  return `meals_${id || JSON.stringify(query)}_${page}_${limit}`;
+}
+
 export async function GET(req) {
   try {
     // Parse query parameters for pagination and filtering
@@ -27,7 +32,7 @@ export async function GET(req) {
     }
 
     // إنشاء مفتاح للتخزين المؤقت
-    const cacheKey = `meals_${id || JSON.stringify(query)}_${page}_${limit}`;
+    const cacheKey = createCacheKey(id, page, limit, query);
 
     // محاولة الحصول على البيانات من التخزين المؤقت
     let meals = cache.get(cacheKey);
@@ -80,9 +85,11 @@ export async function PUT(req) {
     id,
     typeof id
   );
+
   try {
     const meal = await prisma.meal.findUnique({ where: { id } });
 
+    let updateData = {};
     if (actionType && newActionValue) {
       // دالة مساعدة لحساب القيم المحدثة
       function getUpdatedValue(currentValue, actionValue) {
@@ -90,7 +97,6 @@ export async function PUT(req) {
         return newValue >= 0 ? newValue : currentValue;
       }
 
-      let updateData = {};
       if (actionType === 'hearts') {
         updateData = { hearts: getUpdatedValue(meal?.hearts, newActionValue) };
       } else if (actionType === 'likes') {
@@ -103,27 +109,21 @@ export async function PUT(req) {
         where: { id },
         data: updateData,
       });
-
-      // إزالة البيانات القديمة من التخزين المؤقت بعد التحديث
-      cache.flushAll();
-
-      return new Response(
-        JSON.stringify({ message: 'تم التعديل بنجاح', newActionValue }),
-        { status: 200 }
-      );
+    } else {
+      await prisma.meal.update({
+        where: { id },
+        data: data,
+      });
     }
 
-    await prisma.meal.update({
-      where: { id },
-      data: data,
-    });
-
     // إزالة البيانات القديمة من التخزين المؤقت بعد التحديث
-    cache.flushAll();
+    const cacheKey = createCacheKey(id);
+    cache.del(cacheKey);
 
-    return new Response(JSON.stringify({ message: 'تم التعديل بنجاح' }), {
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({ message: 'تم التعديل بنجاح', newActionValue }),
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Error updating meal:', error);
     return new Response(JSON.stringify({ error: 'حدث خطأ ما' }), {
@@ -178,7 +178,8 @@ export async function DELETE(req) {
   });
 
   // إزالة البيانات القديمة من التخزين المؤقت بعد الحذف
-  cache.flushAll();
+  const cacheKey = createCacheKey(id);
+  cache.del(cacheKey);
 
   return new Response(
     JSON.stringify({
