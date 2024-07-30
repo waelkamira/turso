@@ -153,11 +153,11 @@ export default function MyRecipes() {
           {myRecipes?.length > 0 &&
             myRecipes.map((recipe, index) => (
               <div
-                className="relative flex flex-col items-start justify-start gap-0 bg-one rounded-lg overflow-hidden"
+                className="relative flex flex-col items-start justify-start gap-0 bg-twelve rounded-lg overflow-hidden"
                 key={index}
               >
                 {session?.status === 'authenticated' && (
-                  <div className="flex justify-between items-center bg-one w-full pt-4 px-4">
+                  <div className="flex justify-between items-center bg-twelve w-full pt-4 px-4">
                     <div
                       className="flex flex-col items-center justify-center cursor-pointer bg-four rounded-lg p-2 md:text-2xl text-white hover:bg-one"
                       onClick={() => router.push(`/editRecipe/${recipe?.id}`)}

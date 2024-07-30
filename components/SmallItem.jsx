@@ -167,15 +167,15 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
       <div
         key={index}
         id="post1"
-        className="flex flex-col justify-center items-center shadow-md w-full p-4 rounded-lg mb-4 bg-white border-t-[20px] border-one transition-all duration-300"
+        className="flex flex-col justify-center items-center shadow-md w-full p-2 sm:p-4 rounded-lg mb-4 bg-white border-t-[20px] border-twelve transition-all duration-300"
       >
-        <div className="flex items-center justify-center w-full p-2">
+        <div className="flex items-center justify-center w-full sm:p-2">
           <Link
             href={'/profile'}
             className="cursor-pointer flex justify-start items-center gap-2 w-full h-fit "
           >
             <div className="overflow-hidden rounded-full">
-              <div className="relative size-12 rounded-full overflow-hidden">
+              <div className="relative size-8 sm:size-12  rounded-full overflow-hidden">
                 {!recipe?.userImage && <LoadingPhoto />}
                 {recipe?.userImage && (
                   <Image
@@ -207,7 +207,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
             </div>
           )}
         </div>
-        <h1 className="text-one my-2 sm:my-4 text-xl sm:text-3xl font-medium bg-white select-none line-clamp-1">
+        <h1 className="text-one my-1 sm:my-4 text-xl sm:text-3xl font-medium bg-white select-none line-clamp-1">
           {recipe?.mealName}
         </h1>
         <div
@@ -379,7 +379,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
           <h1 className="text-one sm:font-bold text-xl text-start w-full my-2 select-none">
             المقادير:
           </h1>
-          <pre className="text-sm sm:text-lg text-start w-full line-clamp-5 select-none">
+          <pre className="text-sm sm:text-lg text-start w-full line-clamp-3 select-none">
             {recipe?.ingredients}
           </pre>
         </div>
@@ -396,7 +396,7 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
               ));
             }
           }}
-          className="sm:text-2xl p-2 bg-one text-white hover:scale-[102%] hover:text-white font-medium text-center select-none w-full rounded-full shadow-lg transition-all duration-300 "
+          className="sm:text-2xl p-2 my-2 bg-twelve text-white hover:scale-[102%] hover:text-white font-medium text-center select-none w-full rounded-full shadow-lg transition-all duration-300 "
         >
           عرض الوصفة
         </button>
