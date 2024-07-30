@@ -74,7 +74,7 @@ export async function POST(req) {
   const data = await req.json();
   const mealId = data.mealId;
   const actionType = data.actionType;
-  console.log('email **************', email, actionType, mealId);
+  // console.log('email **************', email, actionType, mealId);
 
   await ensurePrismaConnection();
 
@@ -92,7 +92,7 @@ export async function POST(req) {
     }
 
     const meal = await prisma.meal.findUnique({ where: { id: mealId } });
-    console.log('meal **************', meal, actionType, mealId, email);
+    // console.log('meal **************', meal, actionType, mealId, email);
 
     const existingAction = await actionPrisma.action.findFirst({
       where: {

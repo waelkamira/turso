@@ -52,7 +52,7 @@ export default function MyRecipes() {
   async function handleDeletePost(recipeId) {
     const email = session?.data?.user?.email;
     const response = await fetch(
-      `/api/myRecipes?email=${email}&id=${recipeId}`,
+      `/api/allCookingRecipes?email=${email}&id=${recipeId}`,
       {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },

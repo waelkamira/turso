@@ -2,7 +2,12 @@ import prisma from '../../../lib/PrismaClient';
 import actionPrisma from '../../../lib/ActionPrismaClient';
 import NodeCache from 'node-cache';
 
-const cache = new NodeCache({ stdTTL: 60 * 10 }); // التخزين لمدة 10 دقائق
+// تحسين التكوين مع تحديد حجم أقصى للذاكرة
+const cache = new NodeCache({
+  stdTTL: 60 * 10,
+  checkperiod: 60,
+  maxKeys: 1000,
+});
 
 function createCacheKey(params) {
   return `meals_${JSON.stringify(params)}`;
@@ -54,6 +59,9 @@ export async function GET(req) {
       // تخزين البيانات في التخزين المؤقت
       cache.set(cacheKey, meals);
     }
+
+    // مراقبة الأداء
+    console.log('Cache Stats:', cache.getStats());
 
     return new Response(JSON.stringify(meals), {
       headers: { 'Content-Type': 'application/json' },
@@ -151,45 +159,72 @@ export async function DELETE(req) {
 
   await prisma.$connect();
   await actionPrisma.$connect();
-  const mealExists = await prisma.meal.findMany({
-    where: { id, createdBy: email },
-  });
 
-  if (!mealExists) {
+  try {
+    // Check if id and email are provided
+    if (!id || !email) {
+      return new Response(
+        JSON.stringify({ error: 'Meal ID and email must be provided' }),
+        { status: 400 }
+      );
+    }
+
+    // Check if the meal exists and is created by the given email
+    const mealExists = await prisma.meal.findUnique({
+      where: { id, createdBy: email },
+    });
+
+    if (!mealExists) {
+      return new Response(
+        JSON.stringify({
+          error:
+            'Meal not found or you do not have permission to delete this meal',
+        }),
+        { status: 404 }
+      );
+    }
+
+    console.log('id from delete ********************', id);
+    console.log('type of id', typeof id);
+    // Check if actions exist for this meal
+    const actionsExist = await actionPrisma.action.findMany({
+      where: { mealId: id },
+    });
+
+    console.log('actionsExist ****************', actionsExist);
+
+    if (actionsExist.length > 0) {
+      await actionPrisma.action.deleteMany({
+        where: { mealId: id },
+      });
+    }
+
+    // Delete the meal
+    await prisma.meal.delete({
+      where: { id },
+    });
+
+    // Invalidate cache related to meals
+    invalidateCacheByPrefix('meals_');
+
     return new Response(
       JSON.stringify({
-        error:
-          'Meal not found or you do not have permission to delete this meal',
+        message: 'Meal deleted successfully ✔',
       }),
-      {
-        status: 404,
-      }
+      { status: 200 }
     );
+  } catch (error) {
+    console.error('Error deleting meal:', error);
+    return new Response(
+      JSON.stringify({
+        error: 'Internal Server Error',
+      }),
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+    await actionPrisma.$disconnect();
   }
-
-  const heartsExist = await actionPrisma.action.findMany({
-    where: { mealId: id, userEmail: email },
-  });
-
-  if (heartsExist?.length > 0) {
-    await actionPrisma.action.deleteMany({
-      where: { mealId: id, userEmail: email },
-    });
-  }
-
-  await prisma.meal.delete({
-    where: { id },
-  });
-
-  // تحديث التخزين المؤقت
-  invalidateCacheByPrefix('meals_'); // إزالة المفاتيح المتعلقة بالوجبات
-
-  return new Response(
-    JSON.stringify({
-      message: 'تم الحذف بنجاح ✔',
-    }),
-    { status: 200 }
-  );
 }
 
 // import prisma from '../../../lib/PrismaClient';
