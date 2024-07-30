@@ -103,19 +103,19 @@ export default function SideBar() {
 
             <Button title={'طبخاتي'} style={' '} path="/myRecipes" />
             <Button title={'وصفات أعجبتني'} style={' '} path="/favoritePosts" />
-            {userRecipeCount > 0 && (
+            {/* {userRecipeCount > 0 && (
               <Button title={'الجوائز'} style={' '} path="/myGarden" />
-            )}
+            )} */}
 
             {session?.status === 'authenticated' && user?.isAdmin && (
               <Button title={'المستخدمين'} style={' '} path="/users" />
             )}
           </div>
-          {userRecipeCount > 0 && (
+          {/* {userRecipeCount > 0 && (
             <div className="p-4 rounded-r-lg bg-four overflow-hidden my-4">
               <TheGarden />
             </div>
-          )}
+          )} */}
 
           <div className="px-2 rounded-r-lg bg-four overflow-hidden my-4">
             <Categories />
