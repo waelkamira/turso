@@ -156,11 +156,48 @@ export async function DELETE(req) {
   const searchParams = url.searchParams;
   const id = searchParams.get('id');
   const email = searchParams.get('email');
-
+  const isAdmin = searchParams.get('isAdmin');
   await prisma.$connect();
   await actionPrisma.$connect();
+  console.log(
+    'id from delete ********************',
+    id,
+    isAdmin,
+    typeof isAdmin,
+    email
+  );
 
   try {
+    if (isAdmin === 'true') {
+      console.log('id from delete ********************', id, isAdmin);
+
+      const actionsExist = await actionPrisma.action.findMany({
+        where: { mealId: id },
+      });
+
+      if (actionsExist.length > 0) {
+        const actionsExist = await actionPrisma.action.findMany({
+          where: { mealId: id },
+        });
+
+        await actionPrisma.action.deleteMany({
+          where: { mealId: id },
+        });
+      }
+
+      // Delete the meal
+      await prisma.meal.delete({
+        where: { id },
+      });
+
+      return new Response(
+        JSON.stringify({
+          message: 'Meal deleted successfully ✔',
+        }),
+        { status: 200 }
+      );
+    }
+
     // Check if id and email are provided
     if (!id || !email) {
       return new Response(
@@ -184,16 +221,18 @@ export async function DELETE(req) {
       );
     }
 
-    console.log('id from delete ********************', id);
-    console.log('type of id', typeof id);
+    // console.log('id from delete ********************', id);
+    // console.log('type of id', typeof id);
     // Check if actions exist for this meal
     const actionsExist = await actionPrisma.action.findMany({
       where: { mealId: id },
     });
 
-    console.log('actionsExist ****************', actionsExist);
-
     if (actionsExist.length > 0) {
+      const actionsExist = await actionPrisma.action.findMany({
+        where: { mealId: id },
+      });
+
       await actionPrisma.action.deleteMany({
         where: { mealId: id },
       });
@@ -203,6 +242,8 @@ export async function DELETE(req) {
     await prisma.meal.delete({
       where: { id },
     });
+
+    //! هذه خاصة بالأدمن فقط لحذف أي منشور مخالف
 
     // Invalidate cache related to meals
     invalidateCacheByPrefix('meals_');

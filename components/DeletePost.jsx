@@ -6,11 +6,14 @@ import CustomToast from './CustomToast';
 
 export async function HandleDeletePost(recipe) {
   const { dispatch } = useContext(inputsContext);
-  const response = await fetch('/api/allCookingRecipes', {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(recipe),
-  });
+  const response = await fetch(
+    `/api/allCookingRecipes?id=${recipe?.id}&isAdmin=${true}`,
+    {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(recipe),
+    }
+  );
 
   if (response.ok) {
     toast.custom((t) => (

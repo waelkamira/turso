@@ -132,11 +132,14 @@ export default function SmallItem({ recipe, index, show = true, id = false }) {
 
   //? لحذف أي بوست من أي مستخدم هذه الدالة خاصة بالأدمن فقط
   async function handleDeletePost(recipe) {
-    const response = await fetch('/api/allCookingRecipes', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(recipe),
-    });
+    const response = await fetch(
+      `/api/allCookingRecipes?id=${recipe?.id}&isAdmin=${true}`,
+      {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(recipe),
+      }
+    );
 
     if (response.ok) {
       toast.custom((t) => (
